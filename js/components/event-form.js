@@ -25,6 +25,13 @@ function openEventForm(ev) {
   toggleEventFields();
   updateDateHints(f);
   $("eventDialog").showModal();
+  growToFit(f.text); // ต้องหลังเปิดหน้าต่าง (ตอนซ่อนอยู่ วัดความสูงไม่ได้)
+}
+
+// ช่องรายละเอียดสูงขึ้นตามข้อความที่พิมพ์ (สูงสุดตาม max-height ใน CSS แล้วค่อยเลื่อนในช่อง)
+function growToFit(ta) {
+  ta.style.height = "auto";
+  ta.style.height = `${ta.scrollHeight + 2}px`; // +2 = เส้นขอบบนล่าง
 }
 
 // เลือกประเภท "น้ำหนัก" -> โชว์ช่องน้ำหนัก (และไม่ต้องมีนัดครั้งถัดไป)
@@ -133,7 +140,8 @@ function setupEventForm() {
   const f = $("eventForm");
   f.type.onchange = toggleEventFields;
   f.onsubmit = saveEvent;
-  f.weight.oninput = f.text.oninput = () => showEventErrors({}); // เริ่มพิมพ์ -> ซ่อนข้อความเตือน
+  f.weight.oninput = () => showEventErrors({}); // เริ่มพิมพ์ -> ซ่อนข้อความเตือน
+  f.text.oninput = () => { showEventErrors({}); growToFit(f.text); };
   $("addEventBtn").onclick = () => openEventForm(null);       // ปุ่มลอย "+ เพิ่มบันทึก"
   $("bulkEventBtn").onclick = () => openEventForm(null);      // หน้ารายชื่อ "+ บันทึกหลายตัว"
   $("catPicker").onclick = (e) => { const b = e.target.closest("[data-pick]"); if (b) togglePick(b.dataset.pick); };

@@ -38,6 +38,8 @@ dialog input, dialog select, dialog textarea {
   width: 100%; margin-top: 6px; color: var(--ink); font-weight: 400; letter-spacing: normal;
 }
 dialog textarea { resize: vertical; min-height: 64px; }
+/* ช่องรายละเอียดบันทึก: สูงตามข้อความ (JS ปรับให้) ยาวเกินครึ่งจอค่อยเลื่อนในช่อง */
+#eventForm textarea[name=text] { resize: none; overflow-y: auto; max-height: 45vh; line-height: 1.5; }
 /* ช่องวันที่ของ iPhone: ไม่ยุบเตี้ยตอนว่าง และตัวหนังสือชิดซ้ายเหมือนช่องอื่น */
 dialog input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-height: 44px; text-align: left; }
 dialog input[type="date"]::-webkit-date-and-time-value { text-align: left; }

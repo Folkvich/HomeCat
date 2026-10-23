@@ -22,29 +22,27 @@
   --label: color-mix(in srgb, var(--ink) 80%, var(--card)); /* ป้ายชื่อช่องกรอก: เข้มกว่าตัวเทา อ่อนกว่าตัวหลัก */
   color-scheme: light;
 }
-/* โหมดมืด: เปลี่ยนตามการตั้งค่าของเครื่อง */
-@media (prefers-color-scheme: dark) {
-  /* ธีมมืด "Charcoal": เทาถ่านกลาง ๆ ไม่มีสีเจือ ให้เขียวกับพีชเด่นขึ้นมา */
-  :root {
-    --bg: #111214;
-    --card: #1d1f22;
-    --ink: #f2f2f3;
-    --muted: #9ca0a6;
-    --accent: #3ddc97;
-    --accent-soft: #123526;
-    --peach: #ff9e7d;
-    --warn: #fbbf24;
-    --warn-soft: #3a2e0f;
-    --line: #33363b;
-    --danger: #f87171;
-    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
-    --field: #26292d;
-    --pic-bg: #362b27;
-    --top-bg: rgba(17,18,20,.92);
-    --on-accent: #062b1c;
-    --label: color-mix(in srgb, var(--ink) 85%, var(--card));
-    color-scheme: dark;
-  }
+/* โหมดมืด: html มี data-theme="dark" (ตั้งในหัว index.html ตามที่เลือกไว้ หรือตามเครื่อง) */
+/* ธีมมืด "Charcoal": เทาถ่านกลาง ๆ ไม่มีสีเจือ ให้เขียวกับพีชเด่นขึ้นมา */
+:root[data-theme="dark"] {
+  --bg: #111214;
+  --card: #1d1f22;
+  --ink: #f2f2f3;
+  --muted: #9ca0a6;
+  --accent: #3ddc97;
+  --accent-soft: #123526;
+  --peach: #ff9e7d;
+  --warn: #fbbf24;
+  --warn-soft: #3a2e0f;
+  --line: #33363b;
+  --danger: #f87171;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
+  --field: #26292d;
+  --pic-bg: #362b27;
+  --top-bg: rgba(17,18,20,.92);
+  --on-accent: #062b1c;
+  --label: color-mix(in srgb, var(--ink) 85%, var(--card));
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -232,3 +230,27 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
   box-shadow: 0 0 0 2px var(--accent), 0 10px 24px rgba(0,0,0,.18) !important;
   background: var(--card);
 }
+
+/* ----- สวิตช์โหมดสว่าง/มืด (แถบด้านบน) ----- */
+.top .theme-switch { margin-left: auto; }
+.top .theme-switch + .house { margin-left: 0; }
+.theme-switch { position: relative; flex: none; display: inline-flex; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.theme-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; min-height: 0; cursor: pointer; }
+.theme-switch .track {
+  width: 56px; height: 32px; border-radius: 999px; padding: 3px;
+  background: var(--field); border: 1px solid var(--line); transition: background-color .2s, border-color .2s;
+}
+.theme-switch .thumb {
+  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--warn); color: #fff; transition: transform .2s ease, background-color .2s;
+}
+.theme-switch svg { width: 15px; height: 15px; }
+.theme-switch .moon { display: none; }
+.theme-switch input:checked + .track { background: var(--accent-soft); border-color: var(--accent); }
+.theme-switch input:checked + .track .thumb { transform: translateX(24px); background: var(--accent); color: var(--on-accent); }
+.theme-switch input:checked + .track .sun { display: none; }
+.theme-switch input:checked + .track .moon { display: block; }
+.theme-switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-switch:active .thumb { width: 28px; }
+.theme-switch input:checked:active + .track .thumb { transform: translateX(20px); }
+@media (prefers-reduced-motion: reduce) { .theme-switch .track, .theme-switch .thumb { transition: none; } }

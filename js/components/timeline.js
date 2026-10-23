@@ -14,7 +14,7 @@ function drawTimeline(c) {
 // สร้าง HTML ของบันทึก 1 รายการ
 function timelineItemHtml(e) {
   const weight = e.type === "weight" ? ` ${e.weight} กก.` : "";
-  const text = e.text ? ` – ${makeTextSafe(e.text)}` : "";
+  const text = e.text ? `<div class="ev-text">${makeTextSafe(e.text)}</div>` : ""; // บรรทัดของตัวเอง เว้นบรรทัดตามที่พิมพ์
   const next = e.next ? `<div class="next ${dueLevel(daysUntil(e.next))}">📅 นัดครั้งถัดไป ${formatThaiDate(e.next)} (${dueText(daysUntil(e.next))})</div>` : "";
   return `
     <li>
