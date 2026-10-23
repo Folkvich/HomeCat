@@ -1,40 +1,48 @@
 /* ===== พื้นฐานทั้งเว็บ: สี ตัวอักษร เลย์เอาต์ ช่องกรอก ปุ่ม การ์ด ===== */
 /* ออกแบบสำหรับมือถือก่อน แล้วค่อยปรับเพิ่มสำหรับจอใหญ่ใน @media (min-width: ...) */
+/* ธีม: เขียวมรกตสดใสสื่อถึงสุขภาพ + พีชอุ่น ๆ ของแมว */
 :root {
-  --bg: #fdf6ee;
+  --bg: #f6faf7;
   --card: #fff;
-  --ink: #3b2f2f;
-  --muted: #8a7b72;
-  --accent: #e07a3f;
-  --accent-soft: #fff3e8;
-  --line: #eadfd3;
+  --ink: #1d2b25;
+  --muted: #62736a;
+  --accent: #07855a;                   /* สีหลัก (เขียวมรกต) */
+  --accent-soft: #dff5ea;
+  --peach: #ff8a65;                    /* สีรอง (พีช) */
+  --warn: #b45f00;                     /* ใกล้ถึงกำหนด (สีอำพัน) */
+  --warn-soft: #fff0dc;
+  --line: #e0eae4;
   --danger: #c0392b;
   --radius: 14px;
-  --shadow: 0 1px 2px rgba(59,47,47,.04), 0 4px 14px rgba(59,47,47,.06);
+  --shadow: 0 1px 2px rgba(30,45,30,.04), 0 4px 14px rgba(30,45,30,.06);
   --field: #fff;                       /* พื้นช่องกรอกและปุ่ม */
-  --pic-bg: #f4e6d6;                   /* พื้นหลังรูปแมว */
-  --top-bg: rgba(253,246,238,.92);     /* แถบด้านบน (โปร่งนิดหน่อย) */
-  --on-accent: #fff;                   /* ตัวหนังสือบนปุ่มสีส้ม */
+  --pic-bg: #ffe6d9;                   /* พื้นหลังรูปแมว (พีชอ่อน) */
+  --top-bg: rgba(246,250,247,.92);     /* แถบด้านบน (โปร่งนิดหน่อย) */
+  --on-accent: #fff;                   /* ตัวหนังสือบนปุ่มสีหลัก */
   --label: color-mix(in srgb, var(--ink) 80%, var(--card)); /* ป้ายชื่อช่องกรอก: เข้มกว่าตัวเทา อ่อนกว่าตัวหลัก */
   color-scheme: light;
 }
 /* โหมดมืด: เปลี่ยนตามการตั้งค่าของเครื่อง */
 @media (prefers-color-scheme: dark) {
+  /* ธีมมืด "Charcoal": เทาถ่านกลาง ๆ ไม่มีสีเจือ ให้เขียวกับพีชเด่นขึ้นมา */
   :root {
-    --bg: #1f1a17;
-    --card: #2a2320;
-    --ink: #f3e9e0;
-    --muted: #a99b91;
-    --accent: #e8894f;
-    --accent-soft: #3d2b20;
-    --line: #3d332d;
-    --danger: #ec7063;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
-    --field: #332a26;
-    --pic-bg: #3a302a;
-    --top-bg: rgba(31,26,23,.9);
-    --on-accent: #1f1a17;
-    --label: color-mix(in srgb, var(--ink) 80%, var(--card));
+    --bg: #111214;
+    --card: #1d1f22;
+    --ink: #f2f2f3;
+    --muted: #9ca0a6;
+    --accent: #3ddc97;
+    --accent-soft: #123526;
+    --peach: #ff9e7d;
+    --warn: #fbbf24;
+    --warn-soft: #3a2e0f;
+    --line: #33363b;
+    --danger: #f87171;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.35);
+    --field: #26292d;
+    --pic-bg: #362b27;
+    --top-bg: rgba(17,18,20,.92);
+    --on-accent: #062b1c;
+    --label: color-mix(in srgb, var(--ink) 85%, var(--card));
     color-scheme: dark;
   }
 }
@@ -152,7 +160,7 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
   right: max(16px, env(safe-area-inset-right));
   bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
   min-height: 52px; padding: 0 22px; border-radius: 999px;
-  box-shadow: 0 6px 18px rgba(224,122,63,.4);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 /* เว้นที่ด้านล่าง ไม่ให้ปุ่มลอยบังรายการสุดท้ายในประวัติ */
 #detailView { padding-bottom: 72px; }
@@ -200,7 +208,7 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
 .tips code { font-weight: 700; letter-spacing: .1em; color: var(--accent); }
 
 /* ปุ่มลอยยุบลึกกว่าปกติ ให้รู้ว่ากดโดนแน่ ๆ */
-.fab:active:not(:disabled) { transform: scale(.9); box-shadow: 0 2px 8px rgba(224,122,63,.35); }
+.fab:active:not(:disabled) { transform: scale(.9); box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent); }
 
 /* คนที่ตั้งเครื่องให้ลดการเคลื่อนไหว: ไม่ยุบ แต่ยังเข้มขึ้นตอนกด */
 @media (prefers-reduced-motion: reduce) {

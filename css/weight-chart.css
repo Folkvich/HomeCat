@@ -15,7 +15,7 @@
 /* กล่องเตือนน้ำหนักเปลี่ยนเร็ว */
 .alert { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: .9rem; line-height: 1.45; }
 .alert.danger { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
-.alert.warn { background: var(--accent-soft); color: var(--accent); }
+.alert.warn { background: var(--warn-soft); color: var(--warn); }
 
 /* ===== การ์ดสรุปสุขภาพ ===== */
 .health { list-style: none; margin: 0; padding: 0; }
@@ -25,6 +25,6 @@
 .health .detail { color: var(--muted); font-size: .9rem; }
 .health .muted-text { opacity: .8; }
 .health .overdue .detail b { color: var(--danger); }
-.health .soon .detail b { color: var(--accent); }
+.health .soon .detail b { color: var(--warn); }
 .health .overdue { box-shadow: inset 3px 0 0 var(--danger); padding-left: 10px; }
-.health .soon { box-shadow: inset 3px 0 0 var(--accent); padding-left: 10px; }
+.health .soon { box-shadow: inset 3px 0 0 var(--warn); padding-left: 10px; }

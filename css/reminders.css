@@ -10,7 +10,7 @@
 .reminders .r-type { font-weight: 600; }
 .reminders .count { margin-left: 4px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: .78rem; }
 .reminders .due { color: var(--muted); font-size: .875rem; white-space: nowrap; }
-.reminders .soon .due { color: var(--accent); font-weight: bold; }
+.reminders .soon .due { color: var(--warn); font-weight: bold; }
 .reminders .overdue .due { color: var(--danger); font-weight: bold; }
 .reminders .overdue .count { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
 
