@@ -61,6 +61,7 @@
           <li>➕ ปุ่ม <b>+ เพิ่มบันทึก</b> มุมขวาล่าง ใช้จดวัคซีน พบหมอ ชั่งน้ำหนัก</li>
           <li>📅 นัดที่ใกล้ถึงของแมวทุกตัว จะขึ้นบนหน้าแรก</li>
           <li>🏠 ปุ่มมุมขวาบน ดูสมาชิกและชวนคนอื่นเข้าบ้าน</li>
+          <li>✉️ ผูกอีเมลในหน้าต่างบ้าน 🏠 ไว้ เปลี่ยนเครื่องก็กลับมาเป็นคนเดิมได้</li>
           <li>🔑 จดรหัสบ้าน <code id="welcomeCode"></code> ไว้ ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง</li>
         </ul>
         <button class="primary" id="welcomeDoneBtn">ไปดูแมวกันเลย</button>
@@ -80,6 +81,32 @@
           <button type="button" class="link" id="cancelProfileBtn" hidden>ยกเลิก</button>
         </form>
         <p id="profileError" class="field-error" hidden></p>
+        <!-- เปลี่ยนเครื่อง: เข้าโปรไฟล์เดิมที่เคยผูกอีเมลไว้ (ซ่อนตอนแก้ไขโปรไฟล์จากในแอป) -->
+        <div id="emailSignInRow">
+          <div class="or">หรือ</div>
+          <button type="button" id="emailSignInBtn">✉️ เคยผูกอีเมลไว้? เข้าสู่ระบบด้วยอีเมล</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== หน้าอีเมล: ผูกอีเมลกับโปรไฟล์ / เข้าสู่ระบบด้วยอีเมลบนเครื่องใหม่ ===== -->
+    <section id="emailView" class="center-view" hidden>
+      <div class="card auth-card">
+        <div class="empty-pic">✉️</div>
+        <h2 id="emailTitle"></h2>
+        <p id="emailHint" class="muted"></p>
+        <form id="emailForm" novalidate>
+          <input name="email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email" autocapitalize="off">
+          <button class="primary" id="sendCodeBtn">ส่งรหัสยืนยัน</button>
+        </form>
+        <form id="otpForm" novalidate hidden>
+          <p class="muted">ส่งรหัสไปที่ <b id="otpEmail"></b> แล้ว (ถ้าไม่เจอ ลองดูในจดหมายขยะ)</p>
+          <input name="code" placeholder="รหัสในอีเมล" inputmode="numeric" autocomplete="one-time-code" maxlength="10">
+          <button class="primary" id="verifyCodeBtn">ยืนยัน</button>
+          <button type="button" class="link" id="changeEmailBtn">เปลี่ยนอีเมล / ส่งรหัสใหม่</button>
+        </form>
+        <p id="emailError" class="field-error" hidden></p>
+        <button type="button" class="link" id="cancelEmailBtn">ยกเลิก</button>
       </div>
     </section>
 
@@ -254,6 +281,8 @@
       <div class="dialog-head"><h2>🏠 <span id="houseName"></span></h2><button type="button" class="icon-btn" data-close aria-label="ปิด" autofocus>✕</button></div>
       <div class="dialog-body">
         <div class="me-row"><span id="myProfile"></span><button type="button" id="editProfileBtn" class="link">แก้ไขโปรไฟล์</button></div>
+        <!-- สถานะผูกอีเมล (เติมใน account.js) -->
+        <div id="emailStatus" class="email-status" hidden></div>
         <p class="muted small">ชวนคนในบ้านมาดูแลแมวด้วยกัน: ส่งลิงก์เชิญ หรือให้เขากรอกรหัสนี้ (จดรหัสไว้ด้วย ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง)</p>
         <div class="invite">
           <code id="inviteCode"></code>

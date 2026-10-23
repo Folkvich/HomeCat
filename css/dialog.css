@@ -150,3 +150,8 @@ dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 .cat-picker { display: flex; flex-wrap: wrap; gap: 6px; }
 .cat-picker .pick { min-height: 36px; padding: 4px 14px; border-radius: 999px; font-size: .9rem; color: var(--ink); }
 .cat-picker .pick.picked { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+
+/* สถานะผูกอีเมล ในหน้าต่างบ้าน */
+.email-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-bottom: 12px; padding: 8px 12px; border-radius: 10px; background: var(--accent-soft); font-size: .88rem; overflow-wrap: anywhere; }
+.email-status.warn { background: var(--bg); border: 1px dashed var(--line); }
+.email-status .link { margin: 0; min-height: 32px; font-weight: 600; }
