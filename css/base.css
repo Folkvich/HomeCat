@@ -231,3 +231,30 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
   background: var(--card);
 }
 
+
+/* ----- สรุปประวัติให้สัตวแพทย์ ----- */
+.report-tools { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.report { padding: 20px; }
+.report .r-head { display: flex; gap: 14px; align-items: center; margin-bottom: 8px; }
+.report .r-pic { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; background: var(--pic-bg); display: grid; place-items: center; font-size: 2rem; flex: none; }
+.report .r-pic img { width: 100%; height: 100%; object-fit: cover; }
+.report h2 { margin: 0; font-size: 1.4rem; }
+.report h3 { margin: 18px 0 6px; font-size: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.report .r-facts { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin: 0; font-size: .92rem; }
+.report .r-facts dt { color: var(--muted); }
+.report .r-facts dd { margin: 0; overflow-wrap: anywhere; }
+.report table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.report td { padding: 5px 4px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.report .r-date { white-space: nowrap; color: var(--muted); width: 1%; padding-right: 12px; }
+.report .r-extra { color: var(--muted); font-size: .82rem; }
+.report .r-foot { margin-top: 18px; font-size: .8rem; text-align: right; }
+
+/* พิมพ์: เหลือแค่ตัวรายงาน พื้นขาว ตัวดำ (ทั้งโหมดสว่างและมืด) */
+@media print {
+  header.top, .report-tools, .fab, .toast, dialog { display: none !important; }
+  :root { --bg: #fff; --card: #fff; --ink: #000; --muted: #555; --line: #ccc; --pic-bg: #eee; }
+  body { background: #fff; color: #000; }
+  main { padding: 0; max-width: none; }
+  .report { box-shadow: none; border: none; padding: 0; }
+  .report section { break-inside: avoid; }
+}

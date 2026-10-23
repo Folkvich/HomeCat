@@ -21,15 +21,24 @@ function healthStatus(c, type) {
 // ข้อมูลเพิ่มของบางประเภท: น้ำหนัก = ตัวเลขล่าสุด, การรักษา = รักษาอะไร
 function healthExtra(type, last) {
   if (type === "weight" && last.weight) return ` · ${last.weight} กก.`;
-  if (type === "treatment" && last.text) {
-    const t = last.text.split("\n")[0];
-    return ` · ${makeTextSafe(t.length > 24 ? t.slice(0, 24) + "…" : t)}`;
+  if (type === "treatment") {
+    const t = (last.text || "").split("\n")[0];
+    const what = t ? ` · ${makeTextSafe(t.length > 24 ? t.slice(0, 24) + "…" : t)}` : "";
+    // ยังอยู่ในช่วงรักษา -> บอกว่าทำถึงเมื่อไหร่ (ตัวหนา ให้เห็นว่ายังต้องให้ยาอยู่)
+    const active = last.until && daysUntil(last.until) >= 0
+      ? ` · <b class="treating">กำลังรักษา${last.timesPerDay ? ` วันละ ${last.timesPerDay} ครั้ง` : ""} ถึง ${formatThaiDate(last.until)}</b>` : "";
+    return what + active;
   }
   return "";
 }
 
 function drawHealthSummary(c) {
-  $("healthList").innerHTML = healthTypes().map((type) => {
+  $("healthList").innerHTML = healthRowsHtml(c);
+}
+
+// แถวสรุปสุขภาพ (ใช้ทั้งในหน้าแมว และในสรุปให้สัตวแพทย์)
+function healthRowsHtml(c) {
+  return healthTypes().map((type) => {
     const s = healthStatus(c, type);
     let detail;
     if (s.level === "none") detail = `<span class="muted-text">ยังไม่มีบันทึก</span>`;
@@ -40,5 +49,12 @@ function drawHealthSummary(c) {
       else if (s.due) detail += ` · ครั้งต่อไป ${formatThaiDate(s.due)}`;
     }
     return `<li class="${s.level}"><span class="label">${TYPES[type]}</span><span class="detail">${detail}</span></li>`;
-  }).join("");
+  }).join("") + costRowHtml(c);
+}
+
+// แถวค่าใช้จ่าย (โชว์เฉพาะเมื่อเคยใส่ราคาไว้)
+function costRowHtml(c) {
+  const total = sumCost(c.events);
+  if (!total) return "";
+  return `<li><span class="label">💰 ค่าใช้จ่าย</span><span class="detail">ปีนี้ <b>${formatBaht(sumCost(c.events, startOfYear()))}</b> · ทั้งหมด ${formatBaht(total)}</span></li>`;
 }

@@ -28,3 +28,4 @@
 .health .soon .detail b { color: var(--warn); }
 .health .overdue { box-shadow: inset 3px 0 0 var(--danger); padding-left: 10px; }
 .health .soon { box-shadow: inset 3px 0 0 var(--warn); padding-left: 10px; }
+.health .treating { color: var(--accent); }

@@ -17,7 +17,7 @@ function findCatReminders(c) {
 // เรียงจากนัดที่ใกล้ที่สุด (หรือเลยมาแล้ว) ก่อน
 function findReminderGroups() {
   const groups = new Map();
-  for (const r of cats.flatMap(findCatReminders)) {
+  for (const r of activeCats().flatMap(findCatReminders)) { // แมวที่เก็บประวัติไว้ไม่ต้องเตือน
     const key = `${r.event.type}|${r.event.next}`;
     if (!groups.has(key)) groups.set(key, { key, type: r.event.type, next: r.event.next, days: r.days, cats: [] });
     groups.get(key).cats.push(r.cat);
@@ -58,6 +58,7 @@ function reminderGroupHtml(g) {
 
 // ป้ายเล็กบนการ์ดแมว บอกนัดที่ใกล้ที่สุดของตัวนั้น (โชว์เฉพาะที่เลยกำหนดหรือภายใน 7 วัน)
 function catDueBadgeHtml(c) {
+  if (c.archivedAt) return `<span class="badge archived">${makeTextSafe(c.archiveNote || "📦 เก็บไว้")}</span>`;
   const days = Math.min(...findCatReminders(c).map((r) => r.days));
   const level = dueLevel(days);
   if (!level) return "";

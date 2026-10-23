@@ -12,3 +12,9 @@ const $ = (id) => document.getElementById(id);
 
 // หาข้อมูลแมวตัวที่กำลังเปิดดูอยู่
 const findCurrentCat = () => cats.find((x) => x.id === currentId);
+
+// แมวที่ยังดูแลอยู่ (ไม่นับตัวที่เก็บประวัติไว้ เช่น จากไปแล้ว/ย้ายบ้าน)
+const activeCats = () => cats.filter((c) => !c.archivedAt);
+
+let myUserId = null;              // id ผู้ใช้ของเรา (ไว้บอกว่าบันทึกไหนเราเป็นคนเขียน)
+let memberNames = new Map();      // user_id -> "🐻 แม่" ของคนในบ้าน (โชว์ "บันทึกโดย")

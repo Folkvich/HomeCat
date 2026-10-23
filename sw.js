@@ -1,6 +1,6 @@
 // ===== Service Worker: เก็บไฟล์ของเว็บไว้ในเครื่อง ให้เปิดได้แม้ไม่มีเน็ต =====
 // แก้ไฟล์ในเว็บเมื่อไหร่ ให้เปลี่ยนเลขเวอร์ชันนี้ เครื่องผู้ใช้จะได้โหลดไฟล์ใหม่
-const CACHE = "homecat-v28";
+const CACHE = "homecat-v29";
 
 const FILES = [
   "./",
@@ -14,7 +14,7 @@ const FILES = [
   "js/config.js", "js/storage.js", "js/state.js", "js/helpers.js",
   "js/components/toast.js", "js/components/confirm-dialog.js", "js/components/dialogs.js", "js/components/account.js", "js/components/reminders.js", "js/components/cat-list.js",
   "js/components/backup.js", "js/components/cat-profile.js", "js/components/timeline.js",
-  "js/components/weight-chart.js", "js/components/health-summary.js", "js/components/cat-form.js", "js/components/event-form.js",
+  "js/components/weight-chart.js", "js/components/health-summary.js", "js/components/push.js", "js/components/vet-report.js", "js/components/error-report.js", "js/components/cat-form.js", "js/components/event-form.js",
   "js/pages.js", "js/main.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js",
 ];
@@ -46,4 +46,27 @@ self.addEventListener("fetch", (e) => {
       })
       .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
+});
+
+// ===== แจ้งเตือนนัด (ส่งจาก Edge Function daily-reminders) =====
+self.addEventListener("push", (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data?.text() }; }
+  e.waitUntil(self.registration.showNotification(data.title || "🐱 HomeCat", {
+    body: data.body || "",
+    icon: "icons/icon-192.png",
+    badge: "icons/icon-192.png",
+    tag: data.tag || "homecat",        // บ้านเดียวกัน แจ้งเตือนใหม่แทนอันเก่า ไม่ซ้อนกัน
+    data: { url: data.url || "./" },
+  }));
+});
+
+// แตะแจ้งเตือน -> เปิดแอป (ถ้าเปิดค้างอยู่แล้ว ดึงขึ้นมาแทนการเปิดหน้าต่างใหม่)
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = new URL(e.notification.data?.url || "./", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+    const win = wins.find((w) => w.url.startsWith(self.registration.scope));
+    return win ? win.focus() : self.clients.openWindow(url);
+  }));
 });

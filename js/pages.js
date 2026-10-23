@@ -34,6 +34,7 @@ function showCatDetailPage(id) {
   $("backBtn").hidden = false;
   $("topSubtitle").hidden = true;
   $("timelineFilter").value = "all"; // เปิดแมวตัวใหม่ -> โชว์ประวัติทุกประเภท
+  timelineLimit = PAGE_SIZE;          // และเริ่มโชว์ 20 รายการล่าสุด
   drawCatDetail();
   window.scrollTo(0, 0); // เลื่อนกลับไปบนสุด
 }
@@ -44,6 +45,7 @@ function drawCatDetail() {
   if (!c) return goToCatListPage(); // หาแมวไม่เจอ ให้กลับหน้ารายชื่อ
   $("topTitle").textContent = c.name; // แถบบนโชว์ชื่อแมว เลื่อนลงก็ยังรู้ว่าดูตัวไหนอยู่
   drawCatProfile(c);
+  $("addEventBtn").hidden = !!c.archivedAt; // แมวที่เก็บประวัติไว้ ไม่ต้องเพิ่มบันทึกใหม่
   drawTimeline(c);
   drawHealthSummary(c);
   drawWeightChart(c);
@@ -51,7 +53,8 @@ function drawCatDetail() {
 
 // กดย้อนกลับ/ไปข้างหน้าของเบราว์เซอร์ -> ปิดหน้าต่างที่เปิดค้าง แล้ววาดหน้าตามประวัติ
 function setupPages() {
-  $("backBtn").onclick = goToCatListPage;
+  // ปุ่ม ← : อยู่หน้าสรุปให้สัตวแพทย์ -> กลับหน้าแมว, อยู่หน้าแมว -> กลับหน้ารายชื่อ
+  $("backBtn").onclick = () => $("reportView").hidden ? goToCatListPage() : showCatDetailPage(currentId);
   window.onpopstate = () => {
     if (!householdId) return; // ยังไม่ได้ล็อกอิน/เลือกบ้าน
     document.querySelectorAll("dialog[open]").forEach((d) => d.close());

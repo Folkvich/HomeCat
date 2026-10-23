@@ -157,3 +157,34 @@ dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 .members li[data-sort-id] { padding-left: 0; }
 .members li.dragging { border-radius: 10px; padding-inline: 6px; }
 .members .drag-handle { margin-right: 2px; }
+
+/* ----- หน้าต่างบ้าน: ส่วนตั้งค่า (แจ้งเตือน / อีเมล / ค่าใช้จ่าย) ----- */
+.setting-box { margin: 0 0 6px; font-size: .9rem; }
+.setting-box p { margin: 0 0 8px; }
+.setting-box .row { gap: 8px; align-items: center; }
+.inline-form { display: flex; gap: 8px; }
+.inline-form input { margin: 0; min-width: 0; flex: 1; }
+.inline-form button { flex: none; }
+.small-link { display: block; margin: 4px auto 0; font-size: .85rem; min-height: 32px; }
+
+/* ----- ฟอร์มบันทึก: การรักษา 2 ช่องคู่กัน + รูปประกอบ ----- */
+.two-col:not([hidden]) { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.ev-photo-field { margin: 4px 0 8px; }
+.small-btn { min-height: 34px !important; padding: 4px 12px !important; font-size: .85rem; }
+.ev-photos { display: flex; gap: 8px; flex-wrap: wrap; }
+.ev-photo { position: relative; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: var(--pic-bg); }
+.ev-photo img { width: 100%; height: 100%; object-fit: cover; }
+.ev-photo .icon-btn { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; min-height: 28px; font-size: .8rem; background: rgba(0,0,0,.55); color: #fff; }
+
+/* ----- ดูรูปเต็มจอ ----- */
+dialog.photo-viewer { width: min(960px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); background: #000; border-radius: 14px; margin: auto !important; }
+dialog.photo-viewer::before { display: none; }
+dialog.photo-viewer img { display: block; max-width: 100%; max-height: calc(100dvh - 24px); margin: auto; object-fit: contain; }
+dialog.photo-viewer .icon-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,.6); color: #fff; }
+
+/* หน้าตั้งโปรไฟล์: เข้าด้วยอีเมล */
+.email-login { margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+#emailLoginBtn { margin: 10px auto 0; display: block; }
+#emailCodeBox { display: flex; flex-direction: column; gap: 8px; }
+#emailCodeBox:not([hidden]) { display: flex; }
+#houseCost { text-align: left; }

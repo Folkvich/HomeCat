@@ -23,3 +23,10 @@
   .profile .pic { width: 96px; height: 96px; font-size: 3rem; }
   .profile .actions button { flex: none; min-width: 110px; }
 }
+
+/* แมวที่เก็บประวัติไว้ */
+.archived-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; margin: -4px 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--bg); color: var(--muted); font-size: .9rem; }
+.archived-banner .link { margin: 0; min-height: 32px; font-weight: 600; }
+.profile .quick-actions { margin-top: 10px; }
+.profile .quick-actions button { width: 100%; }
+.profile .actions { flex-wrap: wrap; }

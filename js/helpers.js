@@ -82,16 +82,16 @@ function catPictureHtml(c) {
 
 // ย่อรูปให้ด้านยาวสุดไม่เกิน 400px แล้วแปลงเป็นข้อความ เพื่อไม่ให้กินพื้นที่เก็บข้อมูลมาก
 // คืนค่า null ถ้าไม่ได้เลือกรูปหรืออ่านรูปไม่ได้
-function resizePhoto(file) {
+function resizePhoto(file, maxSide = 400, quality = 0.8) {
   return new Promise((resolve) => {
     if (!file) return resolve(null);
     const img = new Image();
     img.onload = () => {
-      const s = Math.min(1, 400 / Math.max(img.width, img.height)); // อัตราส่วนย่อ (ไม่ขยายรูปเล็ก)
+      const s = Math.min(1, maxSide / Math.max(img.width, img.height)); // อัตราส่วนย่อ (ไม่ขยายรูปเล็ก)
       const cv = document.createElement("canvas");
       cv.width = img.width * s; cv.height = img.height * s;
       cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height); // วาดรูปลงผืนผ้าใบขนาดใหม่
-      resolve(cv.toDataURL("image/jpeg", 0.8));                      // แปลงเป็น JPEG คุณภาพ 80%
+      resolve(cv.toDataURL("image/jpeg", quality));                  // แปลงเป็น JPEG (ค่าเริ่มต้นคุณภาพ 80%)
       URL.revokeObjectURL(img.src);                                  // คืนหน่วยความจำ
     };
     img.onerror = () => resolve(null);
@@ -214,3 +214,13 @@ function makeSortable(list, onDone) {
     onDone(ids());
   });
 }
+
+// เงินบาท เช่น 1250 -> "฿1,250", 99.5 -> "฿99.50"
+const formatBaht = (n) => "฿" + Number(n).toLocaleString("th-TH", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+
+// รวมค่าใช้จ่ายของบันทึก ตั้งแต่วันที่ from (YYYY-MM-DD) ไม่ส่ง = ทั้งหมด
+const sumCost = (events, from = "") => events.reduce((t, e) => t + (e.cost > 0 && e.date >= from ? e.cost : 0), 0);
+
+// วันแรกของปีนี้ / เดือนนี้ (YYYY-MM-DD)
+const startOfYear = () => todayString().slice(0, 4) + "-01-01";
+const startOfMonth = () => todayString().slice(0, 7) + "-01";

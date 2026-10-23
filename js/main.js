@@ -8,6 +8,8 @@ setupCatProfile();
 setupTimeline();
 setupCatForm();
 setupEventForm();
+setupVetReport();
+setupErrorReporting(); // ส่ง error จากเครื่องผู้ใช้เข้าฐานข้อมูล
 setupDateHints();
 setupDialogs(); // ปิดด้วย ✕/แตะพื้นหลัง/ปัดลง, หลบคีย์บอร์ด
 setupPages(); // ปุ่ม "กลับ" + ปุ่มย้อนกลับของมือถือ

@@ -12,8 +12,9 @@ let pendingInvite = null; // รหัสเชิญจากลิงก์ �
 
 // โชว์เฉพาะหน้าที่ต้องการ ซ่อนหน้าอื่นทั้งหมด
 function showOnly(viewId) {
-  for (const id of ["bootView", "inviteView", "profileView", "householdView", "welcomeView", "listView", "detailView"]) $(id).hidden = id !== viewId;
+  for (const id of ["bootView", "inviteView", "profileView", "householdView", "welcomeView", "listView", "detailView", "reportView"]) $(id).hidden = id !== viewId;
   $("houseBtn").hidden = !["listView", "detailView"].includes(viewId);
+  $("backBtn").hidden = !["detailView", "reportView"].includes(viewId);
 }
 
 // ----- เริ่มแอป -----
@@ -132,6 +133,8 @@ function showProfileView() {
   showProfileError("");
   $("profileTitle").textContent = profile ? "แก้ไขโปรไฟล์" : "คุณชื่ออะไร?";
   $("cancelProfileBtn").hidden = !appStarted; // แก้ไขจากในแอป -> กดยกเลิกกลับได้
+  $("emailLoginBtn").hidden = appStarted;     // เข้าด้วยอีเมล: เฉพาะตอนยังไม่ได้เข้าแอป
+  $("emailLoginForm").hidden = true;
   showOnly("profileView");
 }
 
@@ -230,7 +233,10 @@ async function openHousehold(h, { welcome = false } = {}) {
   currentId = null;
   try { localStorage.setItem(HOUSE_KEY, JSON.stringify(h)); } catch { /* ไม่เป็นไร */ }
   cats = loadCache();
+  photosByEvent.clear();
   markSeen();
+  startLiveUpdates();      // คนอื่นในบ้านแก้อะไร หน้าจอเราเปลี่ยนตามทันที
+  loadMemberNames();       // ไว้โชว์ "บันทึกโดย ..." ในประวัติ (ไม่ต้องรอ)
   if (welcome && !wasWelcomed(h.id)) {
     showOnly("bootView");
     await refreshFromServer();
@@ -327,7 +333,115 @@ async function openHouseDialog() {
   $("houseMembers").innerHTML = `<li class="muted">กำลังโหลด...</li>`;
   $("houseDialog").showModal();
   $("otherHouses").hidden = true;
+  $("newCodeBtn").hidden = true;
+  drawHouseCost();
+  drawEmailBox();
+  drawPushBox();
   await Promise.all([drawHouseMembers(), drawOtherHouses()]);
+}
+
+// ----- ชื่อสมาชิก (โชว์ "บันทึกโดย" ในประวัติ) -----
+async function loadMemberNames() {
+  const [{ data: { session } }, { data }] = await Promise.all([
+    db.auth.getSession(), db.rpc("list_household_members", { hid: householdId }),
+  ]);
+  myUserId = session?.user.id || null;
+  if (!data) return;
+  memberNames = new Map(data.map((m) => [m.user_id, `${m.avatar} ${m.display_name}`]));
+  if (currentId) drawTimeline(findCurrentCat());
+}
+
+// ----- ค่าใช้จ่ายรวมของบ้าน (ทุกแมว รวมตัวที่เก็บประวัติไว้) -----
+function drawHouseCost() {
+  const all = cats.flatMap((c) => c.events);
+  const month = sumCost(all, startOfMonth()), year = sumCost(all, startOfYear()), total = sumCost(all);
+  $("houseCost").innerHTML = total
+    ? `เดือนนี้ <b>${formatBaht(month)}</b> · ปีนี้ <b>${formatBaht(year)}</b> · ทั้งหมด ${formatBaht(total)}`
+    : "ยังไม่มีค่าใช้จ่าย (ใส่ราคาได้ตอนเพิ่มบันทึก)";
+}
+
+// ----- เปลี่ยนรหัสเชิญ (เจ้าของบ้าน) -----
+async function regenerateInviteCode() {
+  if (!(await askConfirm(`สร้างรหัสเชิญใหม่? รหัส ${household.invite_code} และลิงก์เชิญเดิมจะใช้ไม่ได้ทันที (คนที่อยู่ในบ้านแล้วไม่โดนผลกระทบ)`, "สร้างรหัสใหม่", false))) return;
+  const { data, error } = await db.rpc("regenerate_invite_code", { hid: householdId });
+  if (error) return showToast(`⚠️ ${rpcErrorText(error)}`, 5000);
+  household.invite_code = data;
+  try { localStorage.setItem(HOUSE_KEY, JSON.stringify(household)); } catch { /* ไม่เป็นไร */ }
+  $("inviteCode").textContent = data;
+  $("inviteLinkInput").hidden = true;
+  showToast(`รหัสเชิญใหม่: ${data}`, 4000);
+}
+
+// ----- ผูกอีเมลไว้กู้คืนโปรไฟล์ -----
+// ผู้ใช้แบบไม่ระบุตัวตน + อีเมลที่ยืนยันแล้ว = บัญชีถาวร เปลี่ยนเครื่องแล้วเข้าด้วยอีเมลได้ (บ้าน/แมวอยู่ครบ)
+async function drawEmailBox() {
+  const { data: { user } } = await db.auth.getUser();
+  const box = $("emailBox");
+  if (!user) { box.textContent = "ออฟไลน์อยู่ ลองใหม่เมื่อมีเน็ต"; return; }
+  if (user.email && !user.is_anonymous) {
+    box.innerHTML = `✅ ผูกกับ <b>${makeTextSafe(user.email)}</b> แล้ว<br><span class="muted">เปลี่ยนเครื่องหรือล้างเบราว์เซอร์ ให้กด "เข้าด้วยอีเมล" ในหน้าแรก จะกลับมาเป็นโปรไฟล์นี้</span>`;
+    return;
+  }
+  const pending = user.new_email
+    ? `<p class="muted small">ส่งลิงก์ยืนยันไปที่ <b>${makeTextSafe(user.new_email)}</b> แล้ว เปิดอีเมลแล้วกดลิงก์เพื่อยืนยัน</p>` : "";
+  box.innerHTML = `
+    ${pending || `<p class="muted small">ตอนนี้โปรไฟล์ผูกกับเครื่องนี้อย่างเดียว ผูกอีเมลไว้ ถ้าเปลี่ยนเครื่องจะกลับมาเป็นโปรไฟล์เดิมได้</p>`}
+    <form id="linkEmailForm" class="inline-form" novalidate>
+      <input name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-label="อีเมล" value="${makeTextSafe(user.new_email || "")}">
+      <button class="primary">${pending ? "ส่งอีกครั้ง" : "ผูกอีเมล"}</button>
+    </form>`;
+  $("linkEmailForm").onsubmit = linkEmail;
+}
+
+async function linkEmail(e) {
+  e.preventDefault();
+  const email = e.target.email.value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return showToast("⚠️ อีเมลไม่ถูกต้อง", 3000);
+  const btn = e.target.querySelector("button");
+  btn.disabled = true;
+  const { error } = await db.auth.updateUser({ email }, { emailRedirectTo: location.origin + location.pathname });
+  btn.disabled = false;
+  if (error) {
+    return showToast(/already|registered|exists/i.test(error.message) ? "⚠️ อีเมลนี้ผูกกับโปรไฟล์อื่นแล้ว" : `⚠️ ${authMessage(error)}`, 5000);
+  }
+  showToast("ส่งลิงก์ยืนยันไปที่อีเมลแล้ว กดลิงก์ในอีเมลเพื่อยืนยัน", 5000);
+  drawEmailBox();
+}
+
+// เข้าด้วยอีเมลที่ผูกไว้ (หน้าตั้งโปรไฟล์) -> ไม่สร้างผู้ใช้ใหม่
+async function sendEmailLogin(e) {
+  e.preventDefault();
+  const f = $("emailLoginForm");
+  const email = f.email.value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return showEmailLoginError("อีเมลไม่ถูกต้อง");
+  $("sendLoginBtn").disabled = true;
+  const { error } = await db.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+  $("sendLoginBtn").disabled = false;
+  if (error) return showEmailLoginError(/signups not allowed|not found|otp_disabled/i.test(error.message) ? "ไม่พบโปรไฟล์ที่ผูกกับอีเมลนี้" : authMessage(error));
+  showEmailLoginError("");
+  $("emailCodeBox").hidden = false;
+  $("sendLoginBtn").textContent = "ส่งอีกครั้ง";
+}
+
+async function verifyEmailCode() {
+  const f = $("emailLoginForm");
+  const token = f.code.value.trim();
+  if (!/^\d{6}$/.test(token)) return showEmailLoginError("รหัสต้องเป็นตัวเลข 6 หลัก");
+  const { data, error } = await db.auth.verifyOtp({ email: f.email.value.trim(), token, type: "email" });
+  if (error) return showEmailLoginError(/expired|invalid/i.test(error.message) ? "รหัสไม่ถูกต้องหรือหมดอายุ ลองขอใหม่" : authMessage(error));
+  await enterHousehold(data.user);
+}
+
+function showEmailLoginError(message) {
+  $("emailLoginError").textContent = message;
+  $("emailLoginError").hidden = !message;
+}
+
+// ข้อความ error ของระบบล็อกอินเป็นภาษาไทย
+function authMessage(error) {
+  if (/rate limit|seconds/i.test(error.message)) return "ขอบ่อยเกินไป รอสักครู่แล้วลองใหม่";
+  if (isNetworkError(error)) return "ต่อเน็ตไม่ได้ ลองใหม่อีกครั้ง";
+  return error.message;
 }
 
 // รายชื่อสมาชิก (เจ้าของบ้านเห็นปุ่มโอน/ลบคนอื่น, เจ้าของหายไปเกิน 30 วัน -> สมาชิกเห็นปุ่มขอเป็นเจ้าของแทน)
@@ -340,6 +454,8 @@ async function drawHouseMembers() {
   ]);
   memberCount = error ? 0 : data.length;
   const iAmOwner = !error && data.some((m) => m.user_id === user?.id && m.role === "owner");
+  $("newCodeBtn").hidden = !iAmOwner;
+  if (!error) memberNames = new Map(data.map((m) => [m.user_id, `${m.avatar} ${m.display_name}`]));
   const canClaim = !iAmOwner && inactive.data >= OWNER_CLAIM_DAYS;
   const sortable = !error && data.length > 1;
   $("houseMembers").innerHTML = error ? `<li class="muted">โหลดรายชื่อไม่ได้ (ออฟไลน์?)</li>` : data.map((m) => {
@@ -452,7 +568,13 @@ async function leaveHousehold() {
 // ผู้ใช้ไม่มีอีเมล/รหัสผ่าน: ออกแล้วกลับเข้าโปรไฟล์เดิมไม่ได้ ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสเชิญ
 async function signOut() {
   const pending = outbox.length ? " และข้อมูลที่ยังไม่ได้ส่งขึ้นออนไลน์จะหาย" : "";
-  if (!(await askConfirm(`ออกจากเครื่องนี้? โปรไฟล์นี้จะหายไปถาวร${pending} ถ้าจะกลับเข้ามา ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสบ้าน ${household.invite_code} (จดไว้ก่อนนะ)`, "ออกจากเครื่องนี้"))) return;
+  const { data: { user } } = await db.auth.getUser();
+  const linked = user?.email && !user.is_anonymous;
+  const message = linked
+    ? `ออกจากเครื่องนี้?${pending} กลับเข้ามาได้ด้วยอีเมล ${user.email} (กด "เข้าด้วยอีเมล" ในหน้าแรก)`
+    : `ออกจากเครื่องนี้? โปรไฟล์นี้จะหายไปถาวร${pending} ถ้าจะกลับเข้ามา ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสบ้าน ${household.invite_code} (จดไว้ก่อนนะ หรือผูกอีเมลไว้ก่อนออก)`;
+  if (!(await askConfirm(message, "ออกจากเครื่องนี้"))) return;
+  await disablePushOnThisDevice(); // เครื่องนี้ไม่ต้องรับแจ้งเตือนของโปรไฟล์นี้แล้ว
   await db.auth.signOut();
   forgetHousehold();
   outbox = [];
@@ -465,6 +587,9 @@ async function signOut() {
 // ล้างข้อมูลบ้านในเครื่อง (สำเนาแมว + บ้านที่เลือกไว้)
 function forgetHousehold() {
   try { localStorage.removeItem(CACHE_KEY + householdId); localStorage.removeItem(HOUSE_KEY); } catch { /* ไม่เป็นไร */ }
+  stopLiveUpdates();
+  photosByEvent.clear();
+  memberNames = new Map();
   cats = [];
   household = householdId = null;
   if (history.state?.catId) history.replaceState(null, "");
@@ -484,6 +609,13 @@ function setupAccount() {
   $("leaveHouseBtn").onclick = leaveHousehold;
   $("signOutBtn").onclick = signOut;
   $("closeHouseBtn").onclick = () => $("houseDialog").close();
+  $("newCodeBtn").onclick = regenerateInviteCode;
+  $("emailLoginBtn").onclick = () => {
+    $("emailLoginForm").hidden = !$("emailLoginForm").hidden;
+    if (!$("emailLoginForm").hidden) $("emailLoginForm").email.focus();
+  };
+  $("emailLoginForm").onsubmit = sendEmailLogin;
+  $("verifyCodeBtn").onclick = verifyEmailCode;
   $("houseMembers").onclick = (e) => {
     const b = e.target.closest("button");
     if (b?.dataset.remove) removeMember(b.dataset.remove, b.dataset.name);

@@ -14,6 +14,7 @@ function catToRow(c) {
     chip: c.chip === "yes" ? "yes" : "no", chip_date: c.chipDate || null, chip_place: c.chipPlace || "",
     neutered: ["no", "yes"].includes(c.neutered) ? c.neutered : "unknown",
     photo: c.photo || null, updated_at: new Date().toISOString(),
+    archived_at: c.archivedAt || null, archive_note: c.archiveNote || "",
   };
 }
 
@@ -21,6 +22,9 @@ function eventToRow(catId, e) {
   return {
     id: e.id, household_id: householdId, cat_id: catId, date: e.date, type: e.type,
     weight: e.type === "weight" ? e.weight : null, text: e.text || "", next: e.next || null,
+    cost: e.cost > 0 ? e.cost : null,
+    times_per_day: e.type === "treatment" && e.timesPerDay ? e.timesPerDay : null,
+    until: e.type === "treatment" && e.until ? e.until : null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -29,9 +33,12 @@ function rowToCat(r) {
   return {
     id: r.id, name: r.name, breed: r.breed, sex: r.sex, born: r.born || "", color: r.color, note: r.note,
     chip: r.chip, chipDate: r.chip_date || "", chipPlace: r.chip_place, neutered: r.neutered, photo: r.photo,
+    archivedAt: r.archived_at || null, archiveNote: r.archive_note || "",
     events: (r.events || []).map((e) => ({
-      id: e.id, date: e.date, type: e.type, text: e.text,
+      id: e.id, date: e.date, type: e.type, text: e.text, createdBy: e.created_by || null,
       ...(e.weight != null && { weight: Number(e.weight) }), ...(e.next && { next: e.next }),
+      ...(e.cost != null && { cost: Number(e.cost) }),
+      ...(e.times_per_day && { timesPerDay: e.times_per_day }), ...(e.until && { until: e.until }),
     })),
   };
 }
@@ -107,6 +114,8 @@ function runOp(op) {
     case "upsertEvent": return db.from("events").upsert(op.row);
     case "deleteEvent": return db.from("events").delete().eq("id", op.id);
     case "reorderCats": return db.rpc("reorder_cats", { hid: op.hid, ids: op.ids });
+    case "insertPhoto": return db.from("event_photos").upsert(op.row);
+    case "deletePhoto": return db.from("event_photos").delete().eq("id", op.id);
   }
 }
 
@@ -158,4 +167,59 @@ async function refreshFromServer() {
   cats = data.map(rowToCat);
   saveCache();
   return true;
+}
+
+// ----- รูปในบันทึก: โหลดเฉพาะตอนเปิดหน้าแมว (ไม่โหลดรูปทั้งบ้านทุกครั้งที่ซิงก์) -----
+// photosByEvent: { event_id: [{ id, data }] } เก็บในหน่วยความจำ (ไม่มีเน็ต = ไม่เห็นรูป)
+
+const photosByEvent = new Map();
+
+// โหลดรูปของทุกบันทึกของแมวตัวนี้ คืน true ถ้ามีรูปใหม่ต้องวาดใหม่
+async function loadEventPhotos(c) {
+  const ids = c.events.map((e) => e.id).filter((id) => !photosByEvent.has(id));
+  if (!ids.length) return false;
+  const { data, error } = await db.from("event_photos").select("id, event_id, data").in("event_id", ids).order("created_at");
+  if (error) return false;
+  for (const id of ids) photosByEvent.set(id, []);
+  for (const p of data) photosByEvent.get(p.event_id).push({ id: p.id, data: p.data });
+  return data.length > 0;
+}
+
+// เพิ่ม/ลบรูปของบันทึก (หน้าจอเปลี่ยนทันที แล้วต่อคิวส่งขึ้นเซิร์ฟเวอร์)
+function addEventPhoto(eventId, data) {
+  const photo = { id: newId(), data };
+  photosByEvent.set(eventId, [...(photosByEvent.get(eventId) || []), photo]);
+  queue({ kind: "insertPhoto", row: { id: photo.id, household_id: householdId, event_id: eventId, data } });
+}
+function removeEventPhoto(eventId, photoId) {
+  photosByEvent.set(eventId, (photosByEvent.get(eventId) || []).filter((p) => p.id !== photoId));
+  queue({ kind: "deletePhoto", id: photoId });
+}
+
+// ----- อัปเดตทันที: คนอื่นในบ้านแก้อะไร หน้าจอเราเปลี่ยนตาม (Supabase Realtime) -----
+let liveChannel = null;
+let liveTimer = null;
+
+function startLiveUpdates() {
+  stopLiveUpdates();
+  const filter = `household_id=eq.${householdId}`;
+  const changed = (payload) => {
+    // รูปเปลี่ยน -> ล้างรูปที่จำไว้ของบันทึกนั้น จะได้โหลดใหม่
+    const evId = payload.new?.event_id || payload.old?.event_id;
+    if (payload.table === "event_photos" && evId) photosByEvent.delete(evId);
+    // รวบหลายการเปลี่ยนแปลงที่มาติด ๆ กันเป็นการโหลดครั้งเดียว
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(async () => { if (await refreshFromServer()) redrawCurrentPage(); }, 700);
+  };
+  liveChannel = db.channel(`house-${householdId}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "cats", filter }, changed)
+    .on("postgres_changes", { event: "*", schema: "public", table: "events", filter }, changed)
+    .on("postgres_changes", { event: "*", schema: "public", table: "event_photos", filter }, changed)
+    .subscribe();
+}
+
+function stopLiveUpdates() {
+  clearTimeout(liveTimer);
+  if (liveChannel) db.removeChannel(liveChannel);
+  liveChannel = null;
 }
