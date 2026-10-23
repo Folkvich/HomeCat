@@ -11,6 +11,7 @@ const KEY = "homecat.v1";                 // ข้อมูลรุ่นเ�
 const CACHE_KEY = "homecat.cache.";       // + id บ้าน: สำเนาข้อมูลไว้เปิดดูตอนไม่มีเน็ต
 const OUTBOX_KEY = "homecat.outbox";      // การแก้ไขที่ยังส่งขึ้นเซิร์ฟเวอร์ไม่ได้ (ออฟไลน์)
 const HOUSE_KEY = "homecat.household";    // บ้านที่เลือกใช้อยู่
+const VIEW_KEY = "homecat.view";           // มุมมองรายชื่อแมวของเครื่องนี้: "grid" | "list"
 
 // ประเภทบันทึกประวัติ: รหัส -> ข้อความที่แสดงบนหน้าเว็บ
 const TYPES = {

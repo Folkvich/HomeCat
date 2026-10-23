@@ -70,3 +70,11 @@ dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 .house-list { display: flex; flex-direction: column; gap: 6px; }
 .house-list button { text-align: left; }
 .invite-link { width: 100%; margin-top: 8px; font-size: 14px; color: var(--ink); }
+
+/* ----- เลือกแมวในฟอร์มบันทึก ----- */
+.cat-pick { margin: 4px 0 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.pick-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--muted); font-size: .9rem; }
+.pick-head .link { margin: 0; min-height: 32px; font-weight: 600; }
+.cat-picker { display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-picker .pick { min-height: 36px; padding: 4px 14px; border-radius: 999px; font-size: .9rem; color: var(--ink); }
+.cat-picker .pick.picked { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }

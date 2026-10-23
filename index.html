@@ -110,6 +110,15 @@
         <input id="search" type="search" placeholder="🔍 ค้นหาชื่อแมว...">
         <button id="addCatBtn" class="primary">+ เพิ่มแมว</button>
       </div>
+      <!-- จำนวนแมว + บันทึกหลายตัว + สลับมุมมอง (ตาราง/รายการ) -->
+      <div class="list-tools" id="listTools" hidden>
+        <span id="catCount" class="muted"></span>
+        <button type="button" id="bulkEventBtn" class="link">+ บันทึกหลายตัว</button>
+        <div class="view-toggle" role="group" aria-label="มุมมอง">
+          <button type="button" data-view="grid" title="แบบตาราง" aria-label="แบบตาราง">▦</button>
+          <button type="button" data-view="list" title="แบบรายการ" aria-label="แบบรายการ">☰</button>
+        </div>
+      </div>
       <div id="cats" class="grid"></div>
       <div id="empty" class="empty" hidden>
         <div class="empty-pic">🐱</div>
@@ -222,6 +231,15 @@
         <label>รายละเอียด <input name="text" placeholder="เช่น วัคซีนรวม เข็มที่ 2, คลินิก...">
           <small id="textError" class="field-error" hidden>กรุณาใส่รายละเอียด</small></label>
         <label id="nextField">นัดครั้งถัดไป (ถ้ามี) <input name="next" type="date"></label>
+        <!-- เลือกแมวหลายตัว (เช่น ฉีดวัคซีนพร้อมกันทั้งบ้าน) -->
+        <div id="catPickField" class="cat-pick" hidden>
+          <div class="pick-head">
+            <span id="catPickLabel">บันทึกให้แมว</span>
+            <button type="button" class="link" id="pickAllBtn">เลือกทั้งหมด</button>
+          </div>
+          <div id="catPicker" class="cat-picker" role="group" aria-label="เลือกแมว"></div>
+          <small id="catPickError" class="field-error" hidden>เลือกแมวอย่างน้อย 1 ตัว</small>
+        </div>
       </div>
       <div class="row end dialog-foot">
         <button type="button" id="cancelEventBtn">ยกเลิก</button>
