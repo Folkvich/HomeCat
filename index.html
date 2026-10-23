@@ -43,6 +43,30 @@
     <!-- ===== กำลังเปิดแอป (เช็กการล็อกอิน) ===== -->
     <section id="bootView" class="center-view"><p class="muted">กำลังโหลด...</p></section>
 
+    <!-- ===== Landing page ของลิงก์เชิญ (?join=รหัส) ===== -->
+    <section id="inviteView" class="center-view" hidden>
+      <div class="card auth-card" id="inviteBody"></div>
+    </section>
+
+    <!-- ===== หน้าต้อนรับสมาชิกใหม่ (เข้าบ้านครั้งแรก) ===== -->
+    <section id="welcomeView" class="center-view" hidden>
+      <div class="card auth-card welcome">
+        <div class="empty-pic">🎉</div>
+        <p class="muted">ยินดีต้อนรับสู่บ้าน</p>
+        <h2 id="welcomeHouse"></h2>
+        <p id="welcomeCats" class="muted"></p>
+        <div id="welcomeMembers" class="chips"></div>
+        <ul class="tips">
+          <li>🐱 แตะการ์ดแมว เพื่อดูประวัติ น้ำหนัก และสรุปสุขภาพ</li>
+          <li>➕ ปุ่ม <b>+ เพิ่มบันทึก</b> มุมขวาล่าง ใช้จดวัคซีน พบหมอ ชั่งน้ำหนัก</li>
+          <li>📅 นัดที่ใกล้ถึงของแมวทุกตัว จะขึ้นบนหน้าแรก</li>
+          <li>🏠 ปุ่มมุมขวาบน ดูสมาชิกและชวนคนอื่นเข้าบ้าน</li>
+          <li>🔑 จดรหัสบ้าน <code id="welcomeCode"></code> ไว้ ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง</li>
+        </ul>
+        <button class="primary" id="welcomeDoneBtn">ไปดูแมวกันเลย</button>
+      </div>
+    </section>
+
     <!-- ===== หน้าตั้งโปรไฟล์ (ครั้งแรก / แก้ไข) ===== -->
     <section id="profileView" class="center-view" hidden>
       <div class="card auth-card">
@@ -212,13 +236,18 @@
       <h2>🏠 <span id="houseName"></span></h2>
       <div class="dialog-body">
         <div class="me-row"><span id="myProfile"></span><button type="button" id="editProfileBtn" class="link">แก้ไขโปรไฟล์</button></div>
-        <p class="muted small">ชวนคนในบ้านมาดูแลแมวด้วยกัน: ให้เขาเปิด HomeCat ตั้งโปรไฟล์ แล้วกรอกรหัสนี้ (จดรหัสไว้ด้วย ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง)</p>
+        <p class="muted small">ชวนคนในบ้านมาดูแลแมวด้วยกัน: ส่งลิงก์เชิญ หรือให้เขากรอกรหัสนี้ (จดรหัสไว้ด้วย ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง)</p>
         <div class="invite">
           <code id="inviteCode"></code>
-          <button type="button" id="shareInviteBtn" class="primary">แชร์รหัสเชิญ</button>
+          <button type="button" id="shareInviteBtn" class="primary">แชร์ลิงก์เชิญ</button>
         </div>
+        <button type="button" id="copyLinkBtn" class="link">คัดลอกลิงก์เชิญ</button>
         <h3>สมาชิก</h3>
         <ul id="houseMembers" class="members"></ul>
+        <div id="otherHouses" hidden>
+          <h3>บ้านอื่นของคุณ</h3>
+          <div id="otherHouseList" class="house-list"></div>
+        </div>
       </div>
       <div class="row dialog-foot house-foot">
         <button type="button" id="leaveHouseBtn" class="danger">ออกจากบ้าน</button>

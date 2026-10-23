@@ -173,3 +173,15 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
 .avatar-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 4px 0 6px; }
 .avatar-picker .avatar { font-size: 1.6rem; padding: 0; aspect-ratio: 1; min-height: 0; border-radius: 50%; }
 .avatar-picker .avatar.picked { border: 2px solid var(--accent); background: var(--accent-soft); }
+
+/* ----- Landing page ลิงก์เชิญ + หน้าต้อนรับ ----- */
+.auth-card > p { margin: 4px 0 10px; }
+.auth-card > .primary { width: 100%; margin-top: 8px; }
+.small-center { font-size: .85rem; margin: 10px 0 0; }
+.invite-stats { display: flex; justify-content: center; gap: 24px; margin: 10px 0 14px; color: var(--muted); }
+.invite-stats b { display: block; font-size: 1.5rem; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px 0 14px; }
+.chip { padding: 4px 12px; border-radius: 999px; background: var(--accent-soft); font-size: .9rem; }
+.tips { list-style: none; text-align: left; margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; background: var(--bg); font-size: .9rem; }
+.tips li { padding: 5px 0; }
+.tips code { font-weight: 700; letter-spacing: .1em; color: var(--accent); }
