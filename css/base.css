@@ -98,7 +98,16 @@ label.button {
 @media (hover: hover) {
   button:hover, label.button:hover { filter: brightness(.96); }
 }
-button:active, label.button:active { transform: scale(.97); }
+/* ----- ความรู้สึกตอนกด: ทุกอย่างที่กดได้ จะยุบลงและเข้มขึ้นนิดหนึ่งทันทีที่นิ้วแตะ ----- */
+button, label.button, .cat-card, .reminders li, .profile summary {
+  transition: transform .1s ease-out, filter .1s, box-shadow .1s, background-color .15s, opacity .1s;
+  touch-action: manipulation;          /* ไม่ต้องรอ 300ms (เผื่อแตะสองครั้งซูม) กดแล้วตอบสนองทันที */
+  -webkit-user-select: none; user-select: none; /* กดค้างแล้วไม่เผลอเลือกข้อความ */
+}
+button:active:not(:disabled), label.button:active { transform: scale(.95); filter: brightness(.88); transition-duration: .04s; }
+button.primary:active:not(:disabled) { box-shadow: inset 0 2px 6px rgba(0,0,0,.25); }
+button.link:active:not(:disabled), .profile summary:active { opacity: .55; transform: scale(.97); filter: none; }
+button:disabled { opacity: .55; cursor: default; }
 button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ซ่อน element ที่มี hidden เสมอ (กัน CSS อื่นไปทับ display) */
@@ -137,7 +146,7 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
 
 /* ----- ปุ่มลอยมุมขวาล่าง (เพิ่มบันทึก) ----- */
 .fab {
-  position: fixed; z-index: 4;
+  position: fixed; z-index: 4; transform-origin: center;
   right: max(16px, env(safe-area-inset-right));
   bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
   min-height: 52px; padding: 0 22px; border-radius: 999px;
@@ -185,3 +194,12 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
 .tips { list-style: none; text-align: left; margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; background: var(--bg); font-size: .9rem; }
 .tips li { padding: 5px 0; }
 .tips code { font-weight: 700; letter-spacing: .1em; color: var(--accent); }
+
+/* ปุ่มลอยยุบลึกกว่าปกติ ให้รู้ว่ากดโดนแน่ ๆ */
+.fab:active:not(:disabled) { transform: scale(.9); box-shadow: 0 2px 8px rgba(224,122,63,.35); }
+
+/* คนที่ตั้งเครื่องให้ลดการเคลื่อนไหว: ไม่ยุบ แต่ยังเข้มขึ้นตอนกด */
+@media (prefers-reduced-motion: reduce) {
+  button:active, label.button:active, .cat-card:active, .fab:active { transform: none !important; }
+}
+.avatar-picker .avatar:active { transform: scale(.85); }

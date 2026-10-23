@@ -12,6 +12,14 @@ setupDateHints();
 setupPages(); // ปุ่ม "กลับ" + ปุ่มย้อนกลับของมือถือ
 setupAccount();
 
+// ความรู้สึกตอนกดปุ่ม
+// iPhone: Safari จะไม่โชว์สถานะ :active (ปุ่มยุบ) ถ้าหน้าเว็บไม่ได้ฟัง touchstart ไว้
+document.addEventListener("touchstart", () => {}, { passive: true });
+// Android: สั่นเบา ๆ ตอนแตะปุ่ม (iPhone ไม่รองรับ จะข้ามไปเอง)
+document.addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "touch" && e.target.closest("button:not(:disabled), label.button, .cat-card, .reminders li")) navigator.vibrate?.(8);
+}, { passive: true });
+
 // หมุนจอ/ย่อขยายหน้าต่าง -> วาดกราฟใหม่ให้พอดีความกว้าง
 window.onresize = () => { if (currentId) drawWeightChart(findCurrentCat()); };
 

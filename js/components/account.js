@@ -368,8 +368,23 @@ async function shareInvite() {
   const text = `มาดูแลแมวด้วยกันใน HomeCat! บ้าน "${household.name}" (รหัส ${household.invite_code})`;
   try {
     if (navigator.share) await navigator.share({ title: "เชิญเข้าบ้าน HomeCat", text, url });
-    else { await navigator.clipboard.writeText(`${text}\n${url}`); showToast("คัดลอกลิงก์เชิญแล้ว"); }
+    else copyInviteLink();
   } catch { /* ผู้ใช้กดยกเลิกการแชร์ */ }
+}
+
+// คัดลอกลิงก์เชิญ ถ้าเบราว์เซอร์ไม่ยอม -> โชว์ลิงก์ในช่องให้คัดลอกเอง
+async function copyInviteLink() {
+  const url = inviteLink(household.invite_code);
+  if (await copyText(url, $("houseDialog"))) {
+    $("inviteLinkInput").hidden = true;
+    return showToast("คัดลอกลิงก์เชิญแล้ว ✓");
+  }
+  const input = $("inviteLinkInput");
+  input.value = url;
+  input.hidden = false;
+  input.focus();
+  input.select();
+  showToast("คัดลอกอัตโนมัติไม่ได้ กดค้างที่ลิงก์ด้านบนเพื่อคัดลอก", 4000);
 }
 
 async function leaveHousehold() {
@@ -424,10 +439,7 @@ function setupAccount() {
   $("closeHouseBtn").onclick = () => $("houseDialog").close();
   $("houseMembers").onclick = (e) => { const b = e.target.closest("[data-remove]"); if (b) removeMember(b.dataset.remove, b.dataset.name); };
   $("welcomeDoneBtn").onclick = finishWelcome;
-  $("copyLinkBtn").onclick = async () => {
-    try { await navigator.clipboard.writeText(inviteLink(household.invite_code)); showToast("คัดลอกลิงก์เชิญแล้ว"); }
-    catch { showToast(`ลิงก์เชิญ: ${inviteLink(household.invite_code)}`, 6000); }
-  };
+  $("copyLinkBtn").onclick = copyInviteLink;
 
   // ออกจากระบบจากอีกแท็บ -> กลับหน้าตั้งโปรไฟล์
   db.auth.onAuthStateChange((event) => {

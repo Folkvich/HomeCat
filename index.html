@@ -242,6 +242,8 @@
           <button type="button" id="shareInviteBtn" class="primary">แชร์ลิงก์เชิญ</button>
         </div>
         <button type="button" id="copyLinkBtn" class="link">คัดลอกลิงก์เชิญ</button>
+        <!-- คัดลอกอัตโนมัติไม่ได้ (เช่น เปิดผ่าน http) -> โชว์ลิงก์ให้กดค้างคัดลอกเอง -->
+        <input id="inviteLinkInput" class="invite-link" readonly hidden aria-label="ลิงก์เชิญ">
         <h3>สมาชิก</h3>
         <ul id="houseMembers" class="members"></ul>
         <div id="otherHouses" hidden>
@@ -269,7 +271,7 @@
   </dialog>
 
   <!-- ข้อความแจ้งเตือนเล็ก ๆ ด้านล่างจอ -->
-  <div id="toast" class="toast" role="status" hidden></div>
+  <div id="toast" class="toast" role="status" popover="manual" hidden></div>
 
   <!-- ลำดับสำคัญ: ไลบรารี -> ค่าคงที่ -> ข้อมูล -> ฟังก์ชันช่วย -> components -> หน้า -> เริ่มทำงาน -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>

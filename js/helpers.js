@@ -120,3 +120,25 @@ function addDays(d, n) {
   t.setDate(t.getDate() + n);
   return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
 }
+
+// คัดลอกข้อความลงคลิปบอร์ด คืน true ถ้าสำเร็จ
+// 1) Clipboard API (ต้องเป็น https/localhost และหน้าเว็บต้องโฟกัสอยู่)
+// 2) วิธีเก่า execCommand (ใช้ได้ตอนเปิดผ่าน http ในวง Wi-Fi) ต้องวางช่องไว้ในหน้าต่างที่เปิดอยู่
+//    เพราะตอนหน้าต่าง popup เปิด ส่วนอื่นของหน้าจะเลือกข้อความไม่ได้
+async function copyText(text, container = document.body) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch { /* ลองวิธีถัดไป */ }
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.cssText = "position:fixed; top:0; left:0; opacity:0; font-size:16px;";
+  container.append(ta);
+  ta.select();
+  ta.setSelectionRange(0, text.length); // iOS
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch { ok = false; }
+  ta.remove();
+  return ok;
+}

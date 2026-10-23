@@ -69,3 +69,4 @@ dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 .members .link.danger { color: var(--danger); margin: 0; min-height: 32px; }
 .house-list { display: flex; flex-direction: column; gap: 6px; }
 .house-list button { text-align: left; }
+.invite-link { width: 100%; margin-top: 8px; font-size: 14px; color: var(--ink); }
