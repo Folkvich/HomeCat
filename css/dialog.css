@@ -1,20 +1,38 @@
-/* ===== Component: หน้าต่าง popup (ฟอร์มแมว, ฟอร์มบันทึก, ถามยืนยัน) ===== */
+/* ===== Component: หน้าต่าง popup (ฟอร์มแมว, ฟอร์มบันทึก, บ้าน, ถามยืนยัน) =====
+   โครงเดียวกันทุกอัน: หัว (ชื่อ + ปุ่ม ✕) / เนื้อหา (เลื่อนได้) / ปุ่มด้านล่าง (ติดอยู่เสมอ)
+   - มือถือแนวตั้ง + จอเตี้ย (มือถือแนวนอน): แผ่นเลื่อนขึ้นจากด้านล่าง มีที่จับ ปัดลงเพื่อปิดได้
+   - แท็บเล็ต/คอม: กล่องกลางจอ
+   - คีย์บอร์ดเด้งขึ้น: แผ่นยกตัวขึ้นอยู่เหนือคีย์บอร์ด (--kb ตั้งจาก JS ใน dialogs.js) */
 dialog {
-  border: none; border-radius: var(--radius); padding: 0;
-  width: min(460px, 92vw); max-height: 90vh;
-  max-height: 90dvh; /* ไม่รวมแถบเบราว์เซอร์/คีย์บอร์ดของมือถือ */
+  border: none; padding: 0; margin: auto;
+  width: min(520px, calc(100vw - 32px)); max-width: none;
+  max-height: 86vh;
+  max-height: min(86dvh, 760px); /* dvh = ความสูงจอจริง ไม่รวมแถบเบราว์เซอร์ */
+  border-radius: 20px; overflow: hidden;
   font-family: inherit; color: var(--ink); background: var(--card);
-  box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  box-shadow: 0 24px 60px rgba(0,0,0,.3);
 }
-dialog::backdrop { background: rgba(0,0,0,.4); }
-/* หัว + เนื้อหาเลื่อนได้ + ปุ่มติดด้านล่างเสมอ */
-dialog form { display: flex; flex-direction: column; max-height: 90vh; max-height: 90dvh; }
-dialog h2 { margin: 0; padding: 18px 20px 10px; }
-.dialog-body { overflow-y: auto; padding: 4px 20px 8px; }
-.dialog-foot { padding: 12px 20px; border-top: 1px solid var(--line); background: var(--card); }
-.dialog-foot button { min-width: 96px; }
+dialog[open] { animation: pop-in .18s ease-out; }
+dialog::backdrop { background: rgba(0,0,0,.45); }
+dialog[open]::backdrop { animation: fade-in .2s ease-out; }
+/* เปิดหน้าต่างอยู่ -> หน้าข้างหลังไม่เลื่อนตามนิ้ว */
+html:has(dialog[open]) { overflow: hidden; }
+
+dialog > form, .dialog-wrap { display: flex; flex-direction: column; max-height: inherit; min-height: 0; }
+.dialog-head { flex: none; display: flex; align-items: center; gap: 8px; padding: 14px 12px 6px 20px; }
+.dialog-head h2 { flex: 1; min-width: 0; margin: 0; font-size: 1.2rem; overflow-wrap: anywhere; }
+.icon-btn { flex: none; width: 40px; height: 40px; min-height: 40px; padding: 0; border: none; border-radius: 50%; background: var(--bg); color: var(--muted); font-size: 1rem; }
+.icon-btn:focus:not(:focus-visible) { outline: none; } /* โฟกัสอัตโนมัติตอนเปิด ไม่ต้องโชว์กรอบ */
+.dialog-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 6px 20px 12px; }
+.dialog-foot { flex: none; display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--card); }
+.dialog-foot button { min-width: 96px; min-height: 46px; }
+
 dialog label { display: block; margin-bottom: 12px; color: var(--muted); font-size: .9rem; }
-dialog input, dialog select, dialog textarea { width: 100%; margin-top: 3px; color: var(--ink); }
+dialog input, dialog select, dialog textarea { width: 100%; margin-top: 4px; color: var(--ink); }
+dialog textarea { resize: vertical; min-height: 64px; }
+/* ช่องวันที่ของ iPhone: ไม่ยุบเตี้ยตอนว่าง และตัวหนังสือชิดซ้ายเหมือนช่องอื่น */
+dialog input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-height: 44px; text-align: left; }
+dialog input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 /* ข้อความเตือนเมื่อกรอกไม่ครบ */
 dialog input.invalid { border-color: var(--danger); }
 .field-error { display: block; margin-top: 4px; color: var(--danger); font-size: .82rem; }
@@ -22,28 +40,74 @@ dialog input.invalid { border-color: var(--danger); }
 
 /* ส่วนเลือกรูป: รูปตัวอย่างวงกลม + ปุ่ม */
 .photo-pick { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.photo-pick > div:last-child { display: flex; flex-wrap: wrap; gap: 6px; }
 .photo-pick .pic { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background: var(--pic-bg); display: grid; place-items: center; font-size: 2.5rem; flex: none; }
 .photo-pick img { width: 100%; height: 100%; object-fit: cover; }
-.photo-pick label.button { margin: 0 6px 0 0; }
+.photo-pick label.button { margin: 0; }
 
-/* มือถือ: เลื่อนขึ้นมาจากด้านล่างจอแบบแอป */
-@media (max-width: 599px) {
-  dialog {
-    width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 18px 18px 0 0;
-    animation: sheet-up .2s ease-out;
+/* ----- มือถือแนวตั้ง (จอแคบ) และมือถือแนวนอน (จอเตี้ย): แผ่นเลื่อนขึ้นจากด้านล่าง ----- */
+@media (max-width: 599px), (max-height: 500px) {
+  dialog:not(.confirm) {
+    width: 100%; max-width: 640px;
+    margin: auto auto var(--kb, 0px);  /* ชิดล่าง และลอยอยู่เหนือคีย์บอร์ด */
+    max-height: calc(100vh - var(--kb, 0px) - 12px);
+    max-height: calc(100dvh - var(--kb, 0px) - max(12px, env(safe-area-inset-top)));
+    border-radius: 20px 20px 0 0;
+    animation: sheet-up .24s cubic-bezier(.2, .8, .2, 1);
   }
+  /* ที่จับด้านบน บอกว่าปัดลงเพื่อปิดได้ */
+  dialog:not(.confirm)::before {
+    content: ""; position: absolute; top: 7px; left: 50%; width: 40px; height: 5px; margin-left: -20px;
+    border-radius: 3px; background: var(--line);
+    pointer-events: none; /* กดทะลุไปที่หัวแผ่น จะได้ลากได้ */
+  }
+  .dialog-head { padding-top: 20px; touch-action: none; } /* ลากหัวแผ่นลงได้ ไม่ไปเลื่อนหน้า */
   .dialog-foot { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
   .dialog-foot button { flex: 1; }
 }
-/* หน้าต่างถามยืนยัน: เล็ก อยู่กลางจอเสมอ (แม้บนมือถือ) */
-dialog.confirm { width: min(340px, 88vw); margin: auto; border-radius: var(--radius); animation: none; }
-dialog.confirm p { margin: 0; padding: 22px 20px 16px; font-size: 1.05rem; color: var(--ink); }
-dialog.confirm .dialog-foot { padding-bottom: 12px; }
+/* คีย์บอร์ดขึ้นอยู่ -> ไม่ต้องเว้นที่ให้ขอบล่างของ iPhone */
+html.kb-open .dialog-foot { padding-bottom: 10px; }
 
-@keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
+/* จอแคบมาก (iPhone SE รุ่นแรก, Android เล็ก ~320px): ลดขอบ ปุ่มไม่บังคับความกว้าง */
+@media (max-width: 360px) {
+  .dialog-head { padding-left: 16px; }
+  .dialog-body, .dialog-foot { padding-left: 16px; padding-right: 16px; }
+  .dialog-foot button { min-width: 0; padding-inline: 8px; }
+  .photo-pick .pic { width: 64px; height: 64px; font-size: 2rem; }
+}
+
+/* จอเตี้ย (มือถือแนวนอน): ประหยัดความสูง */
+@media (max-height: 500px) {
+  .dialog-head { padding-top: 16px; padding-bottom: 2px; }
+  dialog label { margin-bottom: 8px; }
+  .dialog-foot { padding-top: 8px; }
+  .dialog-foot button { min-height: 40px; }
+  .photo-pick { margin-bottom: 8px; }
+  .photo-pick .pic { width: 56px; height: 56px; font-size: 1.8rem; }
+}
+
+/* แท็บเล็ต/คอม: ฟอร์มแมวแบ่ง 2 คอลัมน์ ไม่ต้องเลื่อนยาว */
+@media (min-width: 760px) and (min-height: 501px) {
+  #catDialog { width: min(680px, calc(100vw - 48px)); }
+  #catDialog .dialog-body { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; align-content: start; }
+  #catDialog .photo-pick, #catDialog .wide, #catDialog #chipFields { grid-column: 1 / -1; }
+  #catDialog #chipFields:not([hidden]) { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+}
+
+/* หน้าต่างถามยืนยัน: เล็ก อยู่กลางจอเสมอ (แม้บนมือถือ) */
+dialog.confirm { width: min(340px, calc(100vw - 32px)); margin: auto; border-radius: 18px; }
+dialog.confirm p { margin: 0; padding: 22px 20px 16px; font-size: 1.05rem; color: var(--ink); overflow-wrap: anywhere; }
+dialog.confirm .dialog-foot { padding-bottom: 12px; }
+dialog.confirm .dialog-foot button { flex: 1; min-width: 0; }
+
+@keyframes sheet-up { from { transform: translateY(100%); } }
+@keyframes pop-in { from { transform: scale(.96); opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  dialog[open], dialog[open]::backdrop { animation: none !important; }
+}
 
 /* ----- หน้าต่างบ้านของฉัน ----- */
-.dialog-wrap { display: flex; flex-direction: column; max-height: 90vh; max-height: 90dvh; }
 dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 .small { font-size: .875rem; text-align: left; margin: 0 0 10px; }
 .invite { display: flex; gap: 8px; align-items: center; }

@@ -9,6 +9,7 @@ setupTimeline();
 setupCatForm();
 setupEventForm();
 setupDateHints();
+setupDialogs(); // ปิดด้วย ✕/แตะพื้นหลัง/ปัดลง, หลบคีย์บอร์ด
 setupPages(); // ปุ่ม "กลับ" + ปุ่มย้อนกลับของมือถือ
 setupAccount();
 

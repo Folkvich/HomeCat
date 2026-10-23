@@ -174,7 +174,7 @@
   <!-- ===== หน้าต่างฟอร์มเพิ่ม/แก้ไขแมว ===== -->
   <dialog id="catDialog">
     <form id="catForm" method="dialog" novalidate>
-      <h2 id="dialogTitle">เพิ่มแมว</h2>
+      <div class="dialog-head"><h2 id="dialogTitle">เพิ่มแมว</h2><button type="button" class="icon-btn" data-close aria-label="ปิด" autofocus>✕</button></div>
       <div class="dialog-body">
       <div class="photo-pick">
         <div id="photoPreview" class="pic">🐱</div>
@@ -201,7 +201,7 @@
       <label>ทำหมัน
         <select name="neutered"><option value="no">ยังไม่ทำหมัน</option><option value="yes">ทำหมันแล้ว</option><option value="unknown">ไม่ทราบ</option></select>
       </label>
-      <label>หมายเหตุ <textarea name="note" rows="2" placeholder="แพ้อาหาร, โรคประจำตัว ฯลฯ"></textarea></label>
+      <label class="wide">หมายเหตุ <textarea name="note" rows="2" placeholder="แพ้อาหาร, โรคประจำตัว ฯลฯ"></textarea></label>
       </div>
       <div class="row end dialog-foot">
         <button type="button" id="cancelBtn">ยกเลิก</button>
@@ -213,7 +213,7 @@
   <!-- ===== หน้าต่างฟอร์มเพิ่ม/แก้ไขบันทึก ===== -->
   <dialog id="eventDialog">
     <form id="eventForm" method="dialog" novalidate>
-      <h2 id="eventFormTitle">เพิ่มบันทึก</h2>
+      <div class="dialog-head"><h2 id="eventFormTitle">เพิ่มบันทึก</h2><button type="button" class="icon-btn" data-close aria-label="ปิด" autofocus>✕</button></div>
       <div class="dialog-body">
         <label>วันที่ <input type="date" name="date" required></label>
         <label>ประเภท
@@ -251,7 +251,7 @@
   <!-- ===== หน้าต่างบ้านของฉัน ===== -->
   <dialog id="houseDialog">
     <div class="dialog-wrap">
-      <h2>🏠 <span id="houseName"></span></h2>
+      <div class="dialog-head"><h2>🏠 <span id="houseName"></span></h2><button type="button" class="icon-btn" data-close aria-label="ปิด" autofocus>✕</button></div>
       <div class="dialog-body">
         <div class="me-row"><span id="myProfile"></span><button type="button" id="editProfileBtn" class="link">แก้ไขโปรไฟล์</button></div>
         <p class="muted small">ชวนคนในบ้านมาดูแลแมวด้วยกัน: ส่งลิงก์เชิญ หรือให้เขากรอกรหัสนี้ (จดรหัสไว้ด้วย ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง)</p>
@@ -299,6 +299,7 @@
   <script src="js/helpers.js"></script>
   <script src="js/components/toast.js"></script>
   <script src="js/components/confirm-dialog.js"></script>
+  <script src="js/components/dialogs.js"></script>
   <script src="js/components/account.js"></script>
   <script src="js/components/reminders.js"></script>
   <script src="js/components/cat-list.js"></script>

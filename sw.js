@@ -1,6 +1,6 @@
 // ===== Service Worker: เก็บไฟล์ของเว็บไว้ในเครื่อง ให้เปิดได้แม้ไม่มีเน็ต =====
 // แก้ไฟล์ในเว็บเมื่อไหร่ ให้เปลี่ยนเลขเวอร์ชันนี้ เครื่องผู้ใช้จะได้โหลดไฟล์ใหม่
-const CACHE = "homecat-v11";
+const CACHE = "homecat-v12";
 
 const FILES = [
   "./",
@@ -12,7 +12,7 @@ const FILES = [
   "css/base.css", "css/cat-card.css", "css/reminders.css", "css/cat-profile.css",
   "css/timeline.css", "css/weight-chart.css", "css/dialog.css", "css/toast.css",
   "js/config.js", "js/storage.js", "js/state.js", "js/helpers.js",
-  "js/components/toast.js", "js/components/confirm-dialog.js", "js/components/account.js", "js/components/reminders.js", "js/components/cat-list.js",
+  "js/components/toast.js", "js/components/confirm-dialog.js", "js/components/dialogs.js", "js/components/account.js", "js/components/reminders.js", "js/components/cat-list.js",
   "js/components/backup.js", "js/components/cat-profile.js", "js/components/timeline.js",
   "js/components/weight-chart.js", "js/components/health-summary.js", "js/components/cat-form.js", "js/components/event-form.js",
   "js/pages.js", "js/main.js",

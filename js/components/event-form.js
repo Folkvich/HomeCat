@@ -12,6 +12,7 @@ function openEventForm(ev) {
   pickedCats.clear();
   if (currentId) pickedCats.add(currentId);
   f.reset();
+  f.dataset.dirty = ""; // เพิ่งเปิด ยังไม่ได้กรอกอะไร
   showEventErrors({});
   f.date.value = ev ? ev.date : todayString();
   if (ev) {

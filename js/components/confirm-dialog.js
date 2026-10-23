@@ -10,6 +10,11 @@ function askConfirm(message, okText = "ตกลง", danger = true) {
   d.returnValue = "";
   d.showModal();
   return new Promise((resolve) => {
-    d.addEventListener("close", () => resolve(d.returnValue === "ok"), { once: true });
+    const stop = new AbortController();
+    const finish = (answer) => { stop.abort(); resolve(answer); };
+    // กดปุ่ม -> ได้คำตอบทันที (ไม่ต้องรอ event "close" ที่บางเครื่องมาช้า)
+    d.querySelector("form").addEventListener("submit", (e) => finish(e.submitter?.value === "ok"), { signal: stop.signal });
+    // ปิดด้วยวิธีอื่น (Esc, ปุ่มย้อนกลับ, แตะพื้นหลัง) = ยกเลิก
+    d.addEventListener("close", () => finish(d.returnValue === "ok"), { signal: stop.signal });
   });
 }

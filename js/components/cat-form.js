@@ -8,6 +8,7 @@ function openCatForm(cat) {
   removePhoto = false;
   const f = $("catForm");
   f.reset();
+  f.dataset.dirty = ""; // เพิ่งเปิด ยังไม่ได้กรอกอะไร
   showNameError(false);
   $("dialogTitle").textContent = cat ? "แก้ไขข้อมูลแมว" : "เพิ่มแมว";
   if (cat) {
