@@ -51,6 +51,7 @@ function saveCache() {
 
 let outbox = (() => { try { return JSON.parse(localStorage.getItem(OUTBOX_KEY)) || []; } catch { return []; } })();
 let flushing = false;
+let resync = false; // มีงานที่เซิร์ฟเวอร์ไม่รับ -> ต้องโหลดข้อมูลจริงมาทับในเครื่อง
 
 function saveOutbox() {
   try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox)); } catch { /* เต็ม: ยังอยู่ในหน่วยความจำ */ }
@@ -75,7 +76,8 @@ async function flushOutbox() {
       if (error && isNetworkError(error)) break; // เน็ตหลุดกลางทาง -> เก็บคิวไว้ลองใหม่
       if (error) {
         console.error("sync failed", op, error);
-        showToast(`⚠️ ส่งข้อมูลขึ้นไม่สำเร็จ: ${error.message}`, 6000);
+        showToast(`⚠️ ${syncErrorText(error)}`, 6000);
+        resync = true;
       }
       outbox.shift(); // สำเร็จ (หรือผิดพลาดแบบลองซ้ำก็ไม่หาย) -> เอาออกจากคิว
       saveOutbox();
@@ -83,6 +85,18 @@ async function flushOutbox() {
   } finally {
     flushing = false;
   }
+  // มีงานที่เซิร์ฟเวอร์ไม่รับ -> ข้อมูลในเครื่องไม่ตรงกับเซิร์ฟเวอร์แล้ว โหลดของจริงมาแทน
+  if (resync && !outbox.length && householdId) {
+    resync = false;
+    if (await refreshFromServer()) redrawCurrentPage();
+  }
+}
+
+// แปลง error ตอนส่งข้อมูลเป็นภาษาไทย
+function syncErrorText(error) {
+  if (error.code === "42501") return "บันทึกไม่ได้ ข้อมูลนี้เป็นของบ้านอื่นที่คุณไม่ได้เป็นสมาชิก (หรือคุณถูกลบออกจากบ้านแล้ว)";
+  if (error.code === "23503") return "บันทึกไม่ได้ แมวตัวนี้ถูกลบไปแล้ว";
+  return `ส่งข้อมูลขึ้นไม่สำเร็จ: ${error.message}`;
 }
 
 function runOp(op) {
@@ -105,15 +119,22 @@ function saveEventData(c, ev) { saveCache(); queue({ kind: "upsertEvent", row: e
 function removeEventData(id) { saveCache(); queue({ kind: "deleteEvent", id }); }
 
 // เพิ่ม/อัปเดตแมวหลายตัวพร้อมประวัติ (ใช้ตอนนำเข้าไฟล์ หรือย้ายข้อมูลเก่าในเครื่องขึ้นออนไลน์)
-// id ที่ไม่ใช่ UUID (จากเวอร์ชันเก่า) จะได้ id ใหม่ แมวที่ id ซ้ำกับของเดิมจะถูกอัปเดต
+// จับคู่กับแมวที่มีในบ้านนี้อยู่แล้ว (id เดียวกัน หรือชื่อเดียวกัน) -> อัปเดตตัวเดิม ไม่สร้างซ้ำ
+// ไม่เจอในบ้านนี้ -> ให้ id ใหม่เสมอ เพราะ id เดิมในไฟล์อาจเป็นแมวของบ้านอื่นในฐานข้อมูล
+// (ถ้าใช้ id เดิม ฐานข้อมูลจะเข้าใจว่าเราไปแก้แมวของบ้านอื่น แล้วบล็อกไว้)
 function importCats(list) {
+  const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const sameEvent = (a, b) => a.date === b.date && a.type === b.type && (a.text || "") === (b.text || "") && (a.weight ?? null) === (b.weight ?? null);
   for (const raw of list) {
-    const c = { ...raw, id: isUuid(raw.id) ? raw.id : newId(),
-      events: raw.events.map((e) => ({ ...e, id: isUuid(e.id) ? e.id : newId() })) };
-    const i = cats.findIndex((x) => x.id === c.id);
-    i >= 0 ? (cats[i] = c) : cats.push(c);
+    const old = cats.find((x) => x.id === raw.id) || cats.find((x) => sameName(x.name, raw.name));
+    const oldEvents = old?.events || [];
+    // บันทึกที่มีอยู่แล้ว (เหมือนกันทุกช่อง) ใช้ id เดิม, ที่ยังไม่มีได้ id ใหม่
+    const events = raw.events.map((e) => ({ ...e, id: oldEvents.find((x) => x.id === e.id || sameEvent(x, e))?.id || newId() }));
+    const c = { ...raw, id: old ? old.id : newId(),
+      events: [...oldEvents.filter((x) => !events.some((e) => e.id === x.id)), ...events] };
+    old ? (cats[cats.indexOf(old)] = c) : cats.push(c);
     outbox.push({ kind: "upsertCat", row: catToRow(c) });
-    for (const e of c.events) outbox.push({ kind: "upsertEvent", row: eventToRow(c.id, e) });
+    for (const e of events) outbox.push({ kind: "upsertEvent", row: eventToRow(c.id, e) });
   }
   saveOutbox();
   saveCache();
