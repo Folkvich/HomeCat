@@ -19,7 +19,10 @@ function drawCatCards() {
   $("noResult").hidden = !(cats.length && !list.length);
   $("noResult").textContent = `ไม่พบแมวชื่อ "${$("search").value.trim()}"`;
   $("listTools").hidden = cats.length === 0;
-  $("catCount").textContent = q ? `เจอ ${list.length} จาก ${cats.length} ตัว` : `แมว ${cats.length} ตัว`;
+  // จอแคบซ่อนคำในวงเล็บ <span class="long"> ให้เหลือแบบสั้น ("3 ตัว", "2/10 ตัว") ไม่ตกเป็น 2 บรรทัด
+  $("catCount").innerHTML = q
+    ? `<span class="long">เจอ </span>${list.length}<span class="long"> จาก </span><span class="short">/</span>${cats.length} ตัว`
+    : `<span class="long">แมว </span>${cats.length} ตัว`;
   $("bulkEventBtn").hidden = cats.length < 2; // ตัวเดียว ใช้ปุ่มในหน้าแมวพอ
   for (const b of document.querySelectorAll(".view-toggle [data-view]")) {
     b.classList.toggle("on", b.dataset.view === catView);

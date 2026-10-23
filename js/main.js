@@ -1,7 +1,6 @@
 // ===== เริ่มทำงานเมื่อเปิดหน้าเว็บ =====
 
 // ผูกปุ่มของทุก component
-setupTheme(); // สวิตช์โหมดสว่าง/มืด
 setupReminders();
 setupCatList();
 setupBackup();

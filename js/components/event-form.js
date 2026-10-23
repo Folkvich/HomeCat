@@ -5,7 +5,7 @@
 const pickedCats = new Set(); // id แมวที่จะได้บันทึกนี้
 
 // เปิดฟอร์ม: ส่งบันทึกเดิมมา = โหมดแก้ไข, ไม่ส่ง = เพิ่มบันทึกใหม่ (วันที่เป็นวันนี้)
-// เปิดจากหน้าแมว -> เลือกตัวนั้นไว้ก่อน, เปิดจากหน้ารายชื่อ ("บันทึกหลายตัว") -> ยังไม่เลือก
+// เปิดจากหน้าแมว -> เลือกตัวนั้นไว้ก่อน, เปิดจากหน้ารายชื่อ ("เพิ่มบันทึกหลายตัว") -> ยังไม่เลือก
 function openEventForm(ev) {
   const f = $("eventForm");
   editingEventId = ev ? ev.id : null;
@@ -21,7 +21,7 @@ function openEventForm(ev) {
     f.text.value = ev.text || "";
     f.next.value = ev.next || "";
   }
-  $("eventFormTitle").textContent = ev ? "แก้ไขบันทึก" : currentId ? "เพิ่มบันทึก" : "บันทึกหลายตัว";
+  $("eventFormTitle").textContent = ev ? "แก้ไขบันทึก" : currentId ? "เพิ่มบันทึก" : "เพิ่มบันทึกหลายตัว";
   toggleEventFields();
   updateDateHints(f);
   $("eventDialog").showModal();
@@ -143,7 +143,7 @@ function setupEventForm() {
   f.weight.oninput = () => showEventErrors({}); // เริ่มพิมพ์ -> ซ่อนข้อความเตือน
   f.text.oninput = () => { showEventErrors({}); growToFit(f.text); };
   $("addEventBtn").onclick = () => openEventForm(null);       // ปุ่มลอย "+ เพิ่มบันทึก"
-  $("bulkEventBtn").onclick = () => openEventForm(null);      // หน้ารายชื่อ "+ บันทึกหลายตัว"
+  $("bulkEventBtn").onclick = () => openEventForm(null);      // หน้ารายชื่อ "+ เพิ่มบันทึกหลายตัว"
   $("catPicker").onclick = (e) => { const b = e.target.closest("[data-pick]"); if (b) togglePick(b.dataset.pick); };
   $("pickAllBtn").onclick = () => {
     const all = pickedCats.size === cats.length;

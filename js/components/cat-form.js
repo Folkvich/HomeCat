@@ -35,9 +35,18 @@ function toggleChipFields() {
 }
 
 // โชว์/ซ่อนข้อความ "กรุณากรอกข้อมูล" ใต้ช่องชื่อ
-function showNameError(show) {
+// message = ข้อความเตือน (ไม่ส่ง = "กรุณากรอกข้อมูล")
+function showNameError(show, message = "กรุณากรอกข้อมูล") {
+  $("nameError").textContent = message;
   $("nameError").hidden = !show;
   $("catForm").name.classList.toggle("invalid", show);
+}
+
+// มีแมวตัวอื่นในบ้านนี้ใช้ชื่อนี้แล้วหรือยัง (ไม่สนตัวพิมพ์เล็ก/ใหญ่ และช่องว่างหัวท้าย)
+// ชื่อซ้ำทำให้แยกไม่ออกในกล่องนัด การ์ด และตอนเลือกแมวหลายตัว
+function nameTaken(name, exceptId) {
+  const key = name.trim().toLowerCase();
+  return cats.some((c) => c.id !== exceptId && c.name.trim().toLowerCase() === key);
 }
 
 // อ่านค่าทุกช่องในฟอร์มออกมาเป็นข้อมูลแมว (ยังไม่รวมรูป)
@@ -60,6 +69,13 @@ async function saveCatForm(e) {
   if (!f.name.value.trim()) {
     e.preventDefault();
     showNameError(true);
+    f.name.focus();
+    return;
+  }
+  // ชื่อซ้ำกับแมวตัวอื่นในบ้าน -> ไม่ปิดฟอร์ม ให้เปลี่ยนชื่อก่อน
+  if (nameTaken(f.name.value, editingId)) {
+    e.preventDefault();
+    showNameError(true, `มีแมวชื่อ "${f.name.value.trim()}" ในบ้านนี้แล้ว ลองชื่ออื่น หรือเติมให้ต่างกัน เช่น "${f.name.value.trim()} 2"`);
     f.name.focus();
     return;
   }

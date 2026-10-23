@@ -12,7 +12,6 @@ const CACHE_KEY = "homecat.cache.";       // + id บ้าน: สำเนา�
 const OUTBOX_KEY = "homecat.outbox";      // การแก้ไขที่ยังส่งขึ้นเซิร์ฟเวอร์ไม่ได้ (ออฟไลน์)
 const HOUSE_KEY = "homecat.household";    // บ้านที่เลือกใช้อยู่
 const VIEW_KEY = "homecat.view";           // มุมมองรายชื่อแมวของเครื่องนี้: "grid" | "list"
-const THEME_KEY = "homecat.theme";         // โหมดที่เลือกเองในเครื่องนี้: "light" | "dark" (ไม่มี = ตามเครื่อง)
 
 // ประเภทบันทึกประวัติ: รหัส -> ข้อความที่แสดงบนหน้าเว็บ
 // เพิ่มประเภทใหม่ ต้องเพิ่มใน events_type_check ของฐานข้อมูล และ <select name="type"> ใน index.html ด้วย
