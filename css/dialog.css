@@ -138,7 +138,9 @@ dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 #copyLinkBtn { display: block; margin: 6px auto 0; }
 .members li { display: flex; align-items: center; gap: 6px; }
 .members .member-name { flex: 1; }
-.members .link.danger { color: var(--danger); margin: 0; min-height: 32px; }
+.members .link { margin: 0; min-height: 32px; font-size: .85rem; }
+.members .link.danger { color: var(--danger); }
+.members .member-name small { display: block; font-size: .75rem; }
 .house-list { display: flex; flex-direction: column; gap: 6px; }
 .house-list button { text-align: left; }
 .invite-link { width: 100%; margin-top: 8px; font-size: 14px; color: var(--ink); }
@@ -150,8 +152,3 @@ dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
 .cat-picker { display: flex; flex-wrap: wrap; gap: 6px; }
 .cat-picker .pick { min-height: 36px; padding: 4px 14px; border-radius: 999px; font-size: .9rem; color: var(--ink); }
 .cat-picker .pick.picked { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
-
-/* สถานะผูกอีเมล ในหน้าต่างบ้าน */
-.email-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 8px; margin-bottom: 12px; padding: 8px 12px; border-radius: 10px; background: var(--accent-soft); font-size: .88rem; overflow-wrap: anywhere; }
-.email-status.warn { background: var(--bg); border: 1px dashed var(--line); }
-.email-status .link { margin: 0; min-height: 32px; font-weight: 600; }

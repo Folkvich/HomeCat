@@ -1,8 +1,7 @@
 // ===== Component: โปรไฟล์ + บ้าน (สร้าง/เข้าร่วม/เชิญ/ออก) =====
 // ลำดับตอนเปิดแอป: ตั้งโปรไฟล์ (ชื่อ + อีโมจิ) -> เลือก/สร้างบ้าน -> โหลดแมวของบ้านนั้น
-// เริ่มแบบไม่ใช้อีเมล/รหัสผ่าน: ใช้ Anonymous Sign-in ของ Supabase เครื่องจะจำผู้ใช้ไว้เอง
-// ผูกอีเมลทีหลังได้ -> เปลี่ยนเครื่องก็เข้าด้วยอีเมล (ส่งรหัสทางอีเมล) กลับมาเป็นคนเดิม ชื่อ บ้าน และสิทธิ์เจ้าของบ้านอยู่ครบ
-// ไม่ได้ผูกอีเมล + เปลี่ยนเครื่อง -> ตั้งโปรไฟล์ใหม่ แล้วกรอกรหัสเชิญบ้านเดิม แมวยังอยู่ครบ (แมวผูกกับบ้าน ไม่ได้ผูกกับคน)
+// ไม่ใช้อีเมล/รหัสผ่าน: ใช้ Anonymous Sign-in ของ Supabase เครื่องจะจำผู้ใช้ไว้เอง
+// เปลี่ยนเครื่อง/ล้างเบราว์เซอร์ -> ตั้งโปรไฟล์ใหม่ แล้วกรอกรหัสเชิญบ้านเดิม แมวยังอยู่ครบ (แมวผูกกับบ้าน ไม่ได้ผูกกับคน)
 // ลิงก์เชิญ (?join=รหัส): เครื่องที่มีโปรไฟล์อยู่แล้วใช้โปรไฟล์เดิมเข้าบ้านเลย ไม่สร้างผู้ใช้ใหม่
 
 let appStarted = false; // เข้าหน้าแอปแล้วหรือยัง
@@ -10,11 +9,10 @@ let entering = null;    // กำลังหาบ้านอยู่ (กั
 let profile = null;     // โปรไฟล์ของเรา { display_name, avatar }
 let memberCount = 0;    // จำนวนสมาชิกบ้าน (ใช้เตือนตอนจะออก ถ้าเป็นคนสุดท้าย)
 let pendingInvite = null; // รหัสเชิญจากลิงก์ ที่รอเข้าร่วมหลังตั้งโปรไฟล์เสร็จ
-let emailMode = null;     // หน้าอีเมลใช้ทำอะไร: "link" = ผูกอีเมล, "signin" = เข้าสู่ระบบบนเครื่องใหม่
 
 // โชว์เฉพาะหน้าที่ต้องการ ซ่อนหน้าอื่นทั้งหมด
 function showOnly(viewId) {
-  for (const id of ["bootView", "inviteView", "profileView", "emailView", "householdView", "welcomeView", "listView", "detailView"]) $(id).hidden = id !== viewId;
+  for (const id of ["bootView", "inviteView", "profileView", "householdView", "welcomeView", "listView", "detailView"]) $(id).hidden = id !== viewId;
   $("houseBtn").hidden = !["listView", "detailView"].includes(viewId);
 }
 
@@ -118,7 +116,9 @@ function rpcErrorText(error) {
   if (/invalid_invite_code/.test(m)) return "ไม่พบบ้านที่ใช้รหัสนี้ ลองเช็กรหัสอีกครั้ง";
   if (/duplicate_name/.test(m)) return `ในบ้านนี้มีคนชื่อ "${profile?.display_name}" อยู่แล้ว ถ้าเป็นคุณจากเครื่องเก่า ให้เจ้าของบ้านลบชื่อเดิมออกก่อน หรือเปลี่ยนชื่อใหม่`;
   if (/profile_required/.test(m)) return "ตั้งโปรไฟล์ก่อนเข้าร่วมบ้าน";
-  if (/not_owner/.test(m)) return "เฉพาะเจ้าของบ้านเท่านั้นที่ลบสมาชิกได้";
+  if (/not_owner/.test(m)) return "เฉพาะเจ้าของบ้านเท่านั้นที่ทำได้";
+  if (/owner_active/.test(m)) return "เจ้าของบ้านยังใช้งานอยู่ ขอเป็นเจ้าของแทนได้เมื่อเจ้าของไม่ได้เปิดแอปเกิน 30 วัน";
+  if (/not_member/.test(m)) return "คนนี้ไม่ได้อยู่ในบ้านนี้แล้ว";
   if (isNetworkError(error)) return "ต่อเน็ตไม่ได้ ลองใหม่อีกครั้ง";
   return m;
 }
@@ -132,7 +132,6 @@ function showProfileView() {
   showProfileError("");
   $("profileTitle").textContent = profile ? "แก้ไขโปรไฟล์" : "คุณชื่ออะไร?";
   $("cancelProfileBtn").hidden = !appStarted; // แก้ไขจากในแอป -> กดยกเลิกกลับได้
-  $("emailSignInRow").hidden = appStarted;     // ครั้งแรกบนเครื่องนี้ -> เข้าโปรไฟล์เดิมด้วยอีเมลได้
   showOnly("profileView");
 }
 
@@ -189,120 +188,6 @@ function profileErrorText(error) {
   return error.message;
 }
 
-// ----- อีเมล: ผูกกับโปรไฟล์ / เข้าสู่ระบบบนเครื่องใหม่ -----
-// ใช้รหัสในอีเมลแทนการกดลิงก์ เพราะแอปบนหน้าจอโฮม (iPhone) กดลิงก์แล้วไปเปิดใน Safari ไม่ใช่ในแอป
-// ต้องใส่ {{ .Token }} ในเทมเพลตอีเมล Magic Link และ Change Email Address ของ Supabase
-
-function showEmailView(mode, pendingEmail = "") {
-  emailMode = mode;
-  const link = mode === "link";
-  $("emailTitle").textContent = link ? "ผูกอีเมลกับโปรไฟล์" : "เข้าสู่ระบบด้วยอีเมล";
-  $("emailHint").textContent = link
-    ? "เปลี่ยนเครื่องเมื่อไหร่ ก็เข้าด้วยอีเมลนี้ กลับมาเป็นคนเดิมได้เลย (ชื่อ บ้าน และสิทธิ์เจ้าของบ้านอยู่ครบ)"
-    : "ใช้อีเมลที่เคยผูกไว้กับโปรไฟล์ เราจะส่งรหัสไปให้";
-  $("emailForm").email.value = pendingEmail;
-  $("otpForm").code.value = "";
-  showEmailError("");
-  showOnly("emailView");
-  if (pendingEmail) return showOtpStep(pendingEmail); // ส่งรหัสไปแล้วรอบก่อน -> กรอกรหัสต่อได้เลย
-  $("emailForm").hidden = false;
-  $("otpForm").hidden = true;
-  $("emailForm").email.focus();
-}
-
-function showOtpStep(email) {
-  $("otpEmail").textContent = email;
-  $("emailForm").hidden = true;
-  $("otpForm").hidden = false;
-  $("otpForm").code.focus();
-}
-
-function showEmailError(message) {
-  $("emailError").textContent = message;
-  $("emailError").hidden = !message;
-}
-
-async function sendEmailCode(e) {
-  e.preventDefault();
-  const email = $("emailForm").email.value.trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showEmailError("อีเมลไม่ถูกต้อง");
-  showEmailError("");
-  const btn = $("sendCodeBtn");
-  btn.disabled = true;
-  try {
-    // ผูก: ใส่อีเมลให้ผู้ใช้เดิม (ยังเป็นคนเดิม แค่มีอีเมลเพิ่ม) | เข้าสู่ระบบ: ห้ามสร้างผู้ใช้ใหม่ ต้องเป็นอีเมลที่ผูกไว้แล้ว
-    const { error } = emailMode === "link"
-      ? await db.auth.updateUser({ email })
-      : await db.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-    if (error) return showEmailError(emailErrorText(error));
-    showOtpStep(email);
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-async function verifyEmailCode(e) {
-  e.preventDefault();
-  const token = $("otpForm").code.value.replace(/\D/g, "");
-  if (token.length < 6) return showEmailError("กรอกรหัสตัวเลขจากอีเมล");
-  const email = $("otpEmail").textContent;
-  const btn = $("verifyCodeBtn");
-  btn.disabled = true;
-  try {
-    const { data, error } = await db.auth.verifyOtp({ email, token, type: emailMode === "link" ? "email_change" : "email" });
-    if (error) return showEmailError(emailErrorText(error));
-    if (emailMode === "link") {
-      showStartPage();
-      return showToast(`ผูกอีเมล ${email} แล้ว ✓`, 4000);
-    }
-    // เข้าสู่ระบบสำเร็จ = กลับเป็นผู้ใช้เดิม -> หาบ้านของผู้ใช้นั้น (หรือเข้าบ้านจากลิงก์เชิญที่ค้างไว้)
-    appStarted = false;
-    profile = null;
-    try { localStorage.removeItem(HOUSE_KEY); } catch { /* ไม่เป็นไร */ }
-    if (pendingInvite) {
-      const err = await acceptInvite(pendingInvite);
-      if (err) showEmailError(err);
-      return;
-    }
-    await enterHousehold(data.user);
-    showToast("ยินดีต้อนรับกลับมา 👋");
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-function cancelEmail() {
-  if (emailMode === "link") return showStartPage();
-  showProfileView();
-}
-
-function emailErrorText(error) {
-  const m = error.message || "";
-  if (/already.*registered|email_exists/i.test(m)) return "อีเมลนี้ผูกกับโปรไฟล์อื่นอยู่แล้ว ถ้าเป็นของคุณ ให้กด \"ออกจากเครื่องนี้\" แล้วเลือกเข้าสู่ระบบด้วยอีเมล";
-  if (/signups not allowed|user not found/i.test(m)) return "ไม่พบโปรไฟล์ที่ผูกกับอีเมลนี้ ลองเช็กอีเมลอีกครั้ง";
-  if (/expired|invalid/i.test(m)) return "รหัสไม่ถูกต้องหรือหมดอายุแล้ว ลองส่งรหัสใหม่";
-  if (/rate limit|security purposes/i.test(m)) return "ส่งรหัสถี่เกินไป รอสักครู่แล้วลองใหม่";
-  if (/not authorized/i.test(m)) return "ส่งอีเมลไปที่อยู่นี้ไม่ได้: ต้องตั้ง SMTP ของตัวเองใน Supabase ก่อน (Authentication > Emails > SMTP Settings)";
-  if (isNetworkError(error)) return "ต่อเน็ตไม่ได้ ลองใหม่อีกครั้ง";
-  return m;
-}
-
-// สถานะผูกอีเมลในหน้าต่างบ้าน (getUser ถามเซิร์ฟเวอร์ ถ้ายืนยันผ่านลิงก์ในอีเมลแทนการกรอกรหัส ก็จะเห็นว่าผูกแล้ว)
-async function drawEmailStatus() {
-  const { data: { user } } = await db.auth.getUser();
-  const box = $("emailStatus");
-  box.hidden = !user;
-  if (!user) return;
-  if (user.email) {
-    box.innerHTML = `<span>✉️ ${makeTextSafe(user.email)}</span><span class="muted">ผูกอีเมลแล้ว</span>`;
-  } else if (user.new_email) {
-    box.innerHTML = `<span>⏳ รอยืนยัน ${makeTextSafe(user.new_email)}</span><button type="button" class="link" id="linkEmailBtn" data-pending="${makeTextSafe(user.new_email)}">กรอกรหัส</button>`;
-  } else {
-    box.innerHTML = `<span class="muted">ยังไม่ได้ผูกอีเมล ถ้าเปลี่ยนเครื่องจะกลับมาเป็นคนเดิมไม่ได้</span><button type="button" class="link" id="linkEmailBtn">ผูกอีเมล</button>`;
-  }
-  box.classList.toggle("warn", !user.email);
-}
-
 // ----- บ้าน -----
 
 // หาบ้านของผู้ใช้ ถ้ายังไม่มี -> หน้าสร้าง/เข้าร่วมบ้าน, ถ้ามี -> เข้าแอป
@@ -345,6 +230,7 @@ async function openHousehold(h, { welcome = false } = {}) {
   currentId = null;
   try { localStorage.setItem(HOUSE_KEY, JSON.stringify(h)); } catch { /* ไม่เป็นไร */ }
   cats = loadCache();
+  markSeen();
   if (welcome && !wasWelcomed(h.id)) {
     showOnly("bootView");
     await refreshFromServer();
@@ -353,6 +239,11 @@ async function openHousehold(h, { welcome = false } = {}) {
   showStartPage();
   if (await refreshFromServer()) redrawCurrentPage();
   await offerLegacyUpload();
+}
+
+// บอกเซิร์ฟเวอร์ว่าเราเพิ่งเปิดบ้านนี้ (เจ้าของบ้านหายไปเกิน 30 วัน สมาชิกคนอื่นจะขอเป็นเจ้าของแทนได้)
+function markSeen() {
+  if (householdId) db.rpc("touch_household", { hid: householdId }).then(() => {}, () => {}); // ออฟไลน์ก็ไม่เป็นไร
 }
 
 // ----- หน้าต้อนรับสมาชิกใหม่ของบ้าน (ครั้งแรก) -----
@@ -436,20 +327,49 @@ async function openHouseDialog() {
   $("houseMembers").innerHTML = `<li class="muted">กำลังโหลด...</li>`;
   $("houseDialog").showModal();
   $("otherHouses").hidden = true;
-  await Promise.all([drawHouseMembers(), drawOtherHouses(), drawEmailStatus()]);
+  await Promise.all([drawHouseMembers(), drawOtherHouses()]);
 }
 
-// รายชื่อสมาชิก (เจ้าของบ้านจะเห็นปุ่มลบคนอื่น)
+// รายชื่อสมาชิก (เจ้าของบ้านเห็นปุ่มโอน/ลบคนอื่น, เจ้าของหายไปเกิน 30 วัน -> สมาชิกเห็นปุ่มขอเป็นเจ้าของแทน)
+const OWNER_CLAIM_DAYS = 30; // ตรงกับ claim_household_owner ในฐานข้อมูล
+
 async function drawHouseMembers() {
-  const [{ data: { user } }, { data, error }] = await Promise.all([
+  const [{ data: { user } }, { data, error }, inactive] = await Promise.all([
     db.auth.getUser(), db.rpc("list_household_members", { hid: householdId }),
+    db.rpc("owner_inactive_days", { hid: householdId }),
   ]);
   memberCount = error ? 0 : data.length;
   const iAmOwner = !error && data.some((m) => m.user_id === user?.id && m.role === "owner");
-  $("houseMembers").innerHTML = error ? `<li class="muted">โหลดรายชื่อไม่ได้ (ออฟไลน์?)</li>` : data.map((m) => `
-    <li><span class="member-avatar">${makeTextSafe(m.avatar)}</span><span class="member-name">${makeTextSafe(m.display_name)}${m.user_id === user?.id ? " (คุณ)" : ""}</span>
+  const canClaim = !iAmOwner && inactive.data >= OWNER_CLAIM_DAYS;
+  $("houseMembers").innerHTML = error ? `<li class="muted">โหลดรายชื่อไม่ได้ (ออฟไลน์?)</li>` : data.map((m) => {
+    const name = makeTextSafe(m.display_name);
+    const others = iAmOwner && m.user_id !== user?.id;
+    return `
+    <li><span class="member-avatar">${makeTextSafe(m.avatar)}</span><span class="member-name">${name}${m.user_id === user?.id ? " (คุณ)" : ""}
+        ${m.role === "owner" && canClaim ? `<small class="muted">ไม่ได้เปิดแอป ${inactive.data} วัน</small>` : ""}</span>
       ${m.role === "owner" ? `<span class="tag">เจ้าของบ้าน</span>` : ""}
-      ${iAmOwner && m.user_id !== user?.id ? `<button type="button" class="link danger" data-remove="${m.user_id}" data-name="${makeTextSafe(m.display_name)}">ลบ</button>` : ""}</li>`).join("");
+      ${m.role === "owner" && canClaim ? `<button type="button" class="link" data-claim>ขอเป็นเจ้าของแทน</button>` : ""}
+      ${others ? `<button type="button" class="link" data-transfer="${m.user_id}" data-name="${name}">โอนเจ้าของ</button>` : ""}
+      ${others ? `<button type="button" class="link danger" data-remove="${m.user_id}" data-name="${name}">ลบ</button>` : ""}</li>`;
+  }).join("");
+}
+
+// เจ้าของบ้านโอนสิทธิ์ให้คนอื่น (เช่น ย้ายไปเครื่องใหม่: เครื่องเก่าโอนให้โปรไฟล์ของเครื่องใหม่)
+async function transferOwner(uid, name) {
+  if (!(await askConfirm(`โอนเจ้าของบ้านให้ "${name}"? คุณจะเป็นสมาชิกธรรมดา ลบหรือโอนสมาชิกคนอื่นไม่ได้แล้ว`, "โอนเจ้าของบ้าน", false))) return;
+  const { error } = await db.rpc("transfer_household_owner", { hid: householdId, uid });
+  if (error) return showToast(`⚠️ ${rpcErrorText(error)}`, 5000);
+  showToast(`${name} เป็นเจ้าของบ้านแล้ว`);
+  drawHouseMembers();
+}
+
+// เจ้าของบ้านไม่ได้เปิดแอปนาน (เครื่องหาย/พัง) -> สมาชิกขอเป็นเจ้าของแทน
+async function claimOwner() {
+  if (!(await askConfirm("ขอเป็นเจ้าของบ้านแทน? เจ้าของเดิมจะกลายเป็นสมาชิกธรรมดา", "เป็นเจ้าของบ้าน", false))) return;
+  const { error } = await db.rpc("claim_household_owner", { hid: householdId });
+  if (error) return showToast(`⚠️ ${rpcErrorText(error)}`, 5000);
+  showToast("คุณเป็นเจ้าของบ้านแล้ว");
+  drawHouseMembers();
 }
 
 // เจ้าของบ้านลบสมาชิก (เช่น โปรไฟล์เก่าจากเครื่องที่ไม่ได้ใช้แล้ว)
@@ -519,14 +439,10 @@ async function leaveHousehold() {
   await enterHousehold(user);
 }
 
-// ผูกอีเมลแล้ว: กลับเข้ามาด้วยอีเมลได้ | ยังไม่ผูก: โปรไฟล์หายถาวร ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสเชิญ
+// ผู้ใช้ไม่มีอีเมล/รหัสผ่าน: ออกแล้วกลับเข้าโปรไฟล์เดิมไม่ได้ ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสเชิญ
 async function signOut() {
-  const pending = outbox.length ? " ข้อมูลที่ยังไม่ได้ส่งขึ้นออนไลน์จะหาย" : "";
-  const { data: { user } } = await db.auth.getUser();
-  const warn = user?.email
-    ? `ออกจากเครื่องนี้?${pending} กลับเข้ามาเมื่อไหร่ก็เข้าสู่ระบบด้วยอีเมล ${user.email}`
-    : `ออกจากเครื่องนี้? โปรไฟล์นี้จะหายไปถาวร${pending && " และ" + pending.trim()} ถ้าจะกลับเข้ามา ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสบ้าน ${household.invite_code} (จดไว้ก่อนนะ หรือผูกอีเมลก่อนออก)`;
-  if (!(await askConfirm(warn, "ออกจากเครื่องนี้"))) return;
+  const pending = outbox.length ? " และข้อมูลที่ยังไม่ได้ส่งขึ้นออนไลน์จะหาย" : "";
+  if (!(await askConfirm(`ออกจากเครื่องนี้? โปรไฟล์นี้จะหายไปถาวร${pending} ถ้าจะกลับเข้ามา ต้องตั้งโปรไฟล์ใหม่แล้วกรอกรหัสบ้าน ${household.invite_code} (จดไว้ก่อนนะ)`, "ออกจากเครื่องนี้"))) return;
   await db.auth.signOut();
   forgetHousehold();
   outbox = [];
@@ -558,20 +474,14 @@ function setupAccount() {
   $("leaveHouseBtn").onclick = leaveHousehold;
   $("signOutBtn").onclick = signOut;
   $("closeHouseBtn").onclick = () => $("houseDialog").close();
-  $("houseMembers").onclick = (e) => { const b = e.target.closest("[data-remove]"); if (b) removeMember(b.dataset.remove, b.dataset.name); };
+  $("houseMembers").onclick = (e) => {
+    const b = e.target.closest("button");
+    if (b?.dataset.remove) removeMember(b.dataset.remove, b.dataset.name);
+    else if (b?.dataset.transfer) transferOwner(b.dataset.transfer, b.dataset.name);
+    else if (b && "claim" in b.dataset) claimOwner();
+  };
   $("welcomeDoneBtn").onclick = finishWelcome;
   $("copyLinkBtn").onclick = copyInviteLink;
-  $("emailSignInBtn").onclick = () => showEmailView("signin");
-  $("emailForm").onsubmit = sendEmailCode;
-  $("otpForm").onsubmit = verifyEmailCode;
-  $("changeEmailBtn").onclick = () => showEmailView(emailMode);
-  $("cancelEmailBtn").onclick = cancelEmail;
-  $("emailStatus").onclick = (e) => {
-    const b = e.target.closest("#linkEmailBtn");
-    if (!b) return;
-    $("houseDialog").close();
-    showEmailView("link", b.dataset.pending || "");
-  };
 
   // ออกจากระบบจากอีกแท็บ -> กลับหน้าตั้งโปรไฟล์
   db.auth.onAuthStateChange((event) => {
@@ -581,6 +491,8 @@ function setupAccount() {
   // กลับมาออนไลน์ -> ส่งคิว, กลับมาเปิดแอป -> โหลดของที่คนอื่นในบ้านเพิ่งแก้
   window.addEventListener("online", async () => { if (householdId && await refreshFromServer()) redrawCurrentPage(); });
   document.addEventListener("visibilitychange", async () => {
-    if (document.visibilityState === "visible" && householdId && !document.querySelector("dialog[open]") && await refreshFromServer()) redrawCurrentPage();
+    if (document.visibilityState !== "visible" || !householdId) return;
+    markSeen();
+    if (!document.querySelector("dialog[open]") && await refreshFromServer()) redrawCurrentPage();
   });
 }

@@ -215,8 +215,3 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
   button:active, label.button:active, .cat-card:active, .fab:active { transform: none !important; }
 }
 .avatar-picker .avatar:active { transform: scale(.85); }
-
-/* เข้าสู่ระบบด้วยอีเมล (หน้าตั้งโปรไฟล์) + หน้าอีเมล */
-#emailSignInBtn { width: 100%; }
-#emailSignInRow[hidden] { display: none; }
-#cancelEmailBtn { margin-top: 10px; }
