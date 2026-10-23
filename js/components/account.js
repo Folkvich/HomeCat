@@ -341,17 +341,27 @@ async function drawHouseMembers() {
   memberCount = error ? 0 : data.length;
   const iAmOwner = !error && data.some((m) => m.user_id === user?.id && m.role === "owner");
   const canClaim = !iAmOwner && inactive.data >= OWNER_CLAIM_DAYS;
+  const sortable = !error && data.length > 1;
   $("houseMembers").innerHTML = error ? `<li class="muted">โหลดรายชื่อไม่ได้ (ออฟไลน์?)</li>` : data.map((m) => {
     const name = makeTextSafe(m.display_name);
     const others = iAmOwner && m.user_id !== user?.id;
     return `
-    <li><span class="member-avatar">${makeTextSafe(m.avatar)}</span><span class="member-name">${name}${m.user_id === user?.id ? " (คุณ)" : ""}
+    <li ${sortable ? `data-sort-id="${m.user_id}"` : ""}>${sortable ? `<button type="button" class="drag-handle" aria-label="ลากเพื่อย้ายลำดับ ${name}">⠿</button>` : ""}<span class="member-avatar">${makeTextSafe(m.avatar)}</span><span class="member-name">${name}${m.user_id === user?.id ? " (คุณ)" : ""}
         ${m.role === "owner" && canClaim ? `<small class="muted">ไม่ได้เปิดแอป ${inactive.data} วัน</small>` : ""}</span>
       ${m.role === "owner" ? `<span class="tag">เจ้าของบ้าน</span>` : ""}
       ${m.role === "owner" && canClaim ? `<button type="button" class="link" data-claim>ขอเป็นเจ้าของแทน</button>` : ""}
       ${others ? `<button type="button" class="link" data-transfer="${m.user_id}" data-name="${name}">โอนเจ้าของ</button>` : ""}
       ${others ? `<button type="button" class="link danger" data-remove="${m.user_id}" data-name="${name}">ลบ</button>` : ""}</li>`;
   }).join("");
+}
+
+// ลากเรียงลำดับสมาชิก -> บันทึกลงฐานข้อมูล ทุกคนในบ้านเห็นลำดับเดียวกัน
+async function saveMemberOrder(uids) {
+  const { error } = await db.rpc("reorder_household_members", { hid: householdId, uids });
+  if (error) {
+    showToast(isNetworkError(error) ? "📴 ไม่มีเน็ต ลำดับสมาชิกยังไม่ได้บันทึก" : `⚠️ บันทึกลำดับไม่สำเร็จ: ${error.message}`, 5000);
+    drawHouseMembers(); // กลับเป็นลำดับที่บันทึกไว้จริง
+  }
 }
 
 // เจ้าของบ้านโอนสิทธิ์ให้คนอื่น (เช่น ย้ายไปเครื่องใหม่: เครื่องเก่าโอนให้โปรไฟล์ของเครื่องใหม่)
@@ -480,6 +490,7 @@ function setupAccount() {
     else if (b?.dataset.transfer) transferOwner(b.dataset.transfer, b.dataset.name);
     else if (b && "claim" in b.dataset) claimOwner();
   };
+  makeSortable($("houseMembers"), saveMemberOrder);
   $("welcomeDoneBtn").onclick = finishWelcome;
   $("copyLinkBtn").onclick = copyInviteLink;
 

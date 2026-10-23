@@ -105,6 +105,7 @@ function runOp(op) {
     case "deleteCat": return db.from("cats").delete().eq("id", op.id);
     case "upsertEvent": return db.from("events").upsert(op.row);
     case "deleteEvent": return db.from("events").delete().eq("id", op.id);
+    case "reorderCats": return db.rpc("reorder_cats", { hid: op.hid, ids: op.ids });
   }
 }
 
@@ -117,6 +118,7 @@ function saveCatData(c) { saveCache(); queue({ kind: "upsertCat", row: catToRow(
 function removeCatData(id) { saveCache(); queue({ kind: "deleteCat", id }); }
 function saveEventData(c, ev) { saveCache(); queue({ kind: "upsertEvent", row: eventToRow(c.id, ev) }); }
 function removeEventData(id) { saveCache(); queue({ kind: "deleteEvent", id }); }
+function saveCatOrder(ids) { saveCache(); queue({ kind: "reorderCats", hid: householdId, ids }); }
 
 // เพิ่ม/อัปเดตแมวหลายตัวพร้อมประวัติ (ใช้ตอนนำเข้าไฟล์ หรือย้ายข้อมูลเก่าในเครื่องขึ้นออนไลน์)
 // จับคู่กับแมวที่มีในบ้านนี้อยู่แล้ว (id เดียวกัน หรือชื่อเดียวกัน) -> อัปเดตตัวเดิม ไม่สร้างซ้ำ
@@ -148,7 +150,8 @@ async function refreshFromServer() {
   await flushOutbox();
   if (outbox.length) return false;
   const { data, error } = await db.from("cats").select("*, events(*)")
-    .eq("household_id", householdId).order("created_at");
+    .eq("household_id", householdId)
+    .order("sort_order", { nullsFirst: false }).order("created_at"); // ตามที่ลากเรียงไว้ แมวใหม่ต่อท้าย
   if (error) { if (!isNetworkError(error)) console.error(error); return false; }
   if (outbox.length) return false; // ระหว่างรอ มีการแก้ใหม่เข้ามา -> รอบหน้าค่อยโหลด
   cats = data.map(rowToCat);

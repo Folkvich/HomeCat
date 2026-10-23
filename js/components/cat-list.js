@@ -26,17 +26,23 @@ function drawCatCards() {
     b.setAttribute("aria-pressed", b.dataset.view === catView);
   }
   $("cats").className = catView === "list" ? "cat-rows" : "grid";
-  $("cats").innerHTML = list.map(catView === "list" ? catRowHtml : catCardHtml).join("");
+  // ลากเรียงได้เฉพาะตอนเห็นแมวครบทุกตัว (กำลังค้นหา = เห็นแค่บางตัว ลำดับจะสับสน)
+  const sortable = !q && cats.length > 1;
+  $("cats").innerHTML = list.map((c) => (catView === "list" ? catRowHtml : catCardHtml)(c, sortable)).join("");
   drawReminders();
 }
 
+// ปุ่มจับสำหรับลากเรียงลำดับ
+const dragHandleHtml = (name) =>
+  `<button type="button" class="drag-handle" aria-label="ลากเพื่อย้ายลำดับ ${makeTextSafe(name)}">⠿</button>`;
+
 // สร้าง HTML การ์ดแมว 1 ใบ
-function catCardHtml(c) {
+function catCardHtml(c, sortable) {
   const w = latestWeight(c);
   const age = c.born ? ` · ${calculateAge(c.born)}` : ""; // ไม่มีวันเกิด -> ไม่ต้องโชว์อายุ
   return `
-    <article class="card cat-card" data-id="${c.id}" tabindex="0">
-      <div class="pic">${catPictureHtml(c)}${catDueBadgeHtml(c)}</div>
+    <article class="card cat-card" data-id="${c.id}" ${sortable ? `data-sort-id="${c.id}"` : ""} tabindex="0">
+      <div class="pic">${catPictureHtml(c)}${catDueBadgeHtml(c)}${sortable ? dragHandleHtml(c.name) : ""}</div>
       <div class="info">
         <b>${makeTextSafe(c.name)}</b>
         <small>${makeTextSafe(c.breed || "ไม่ระบุสายพันธุ์")}${age}</small>
@@ -46,7 +52,7 @@ function catCardHtml(c) {
 }
 
 // สร้าง HTML แมว 1 แถว (แบบรายการ): รูปวงกลมเล็ก + ชื่อ + ข้อมูลย่อ + นัดถัดไป
-function catRowHtml(c) {
+function catRowHtml(c, sortable) {
   const w = latestWeight(c);
   const facts = [makeTextSafe(c.breed || "ไม่ระบุสายพันธุ์"), c.born && calculateAge(c.born), w && `⚖️ ${w} กก.`].filter(Boolean).join(" · ");
   const r = nearestReminder(c);
@@ -54,7 +60,7 @@ function catRowHtml(c) {
     ? `<small class="next ${dueLevel(r.days)}">${TYPES[r.event.type]} ${r.days < 0 ? `เลยนัดมา ${durationText(r.days)}` : `นัด${dueText(r.days)}`}</small>`
     : `<small>📋 ${c.events.length} บันทึก</small>`;
   return `
-    <article class="card cat-card cat-row" data-id="${c.id}" tabindex="0">
+    <article class="card cat-card cat-row" data-id="${c.id}" ${sortable ? `data-sort-id="${c.id}"` : ""} tabindex="0">
       <div class="pic">${catPictureHtml(c)}</div>
       <div class="info">
         <b>${makeTextSafe(c.name)}</b>
@@ -62,6 +68,7 @@ function catRowHtml(c) {
         ${next}
       </div>
       <span class="chev" aria-hidden="true">›</span>
+      ${sortable ? dragHandleHtml(c.name) : ""}
     </article>`;
 }
 
@@ -77,6 +84,7 @@ function setupCatList() {
 
   // คลิกการ์ดแมว -> เปิดหน้ารายละเอียดของตัวนั้น
   $("cats").onclick = (e) => {
+    if (e.target.closest(".drag-handle")) return; // แตะปุ่มลาก ไม่ใช่เปิดหน้าแมว
     const card = e.target.closest(".cat-card");
     if (card) goToCatDetailPage(card.dataset.id);
   };
@@ -84,4 +92,9 @@ function setupCatList() {
   $("cats").onkeydown = (e) => {
     if (e.key === "Enter" && e.target.classList.contains("cat-card")) goToCatDetailPage(e.target.dataset.id);
   };
+  // ลากเรียงลำดับแมว -> ทุกคนในบ้านเห็นลำดับเดียวกัน
+  makeSortable($("cats"), (ids) => {
+    cats.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+    saveCatOrder(ids);
+  });
 }

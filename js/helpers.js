@@ -157,3 +157,60 @@ async function copyText(text, container = document.body) {
   ta.remove();
   return ok;
 }
+
+// ----- ลากเรียงลำดับ (ใช้ได้ทั้งนิ้วและเมาส์) -----
+// แต่ละรายการต้องมี data-sort-id และปุ่มจับ .drag-handle (จับที่ปุ่มเท่านั้น แตะส่วนอื่นยังเปิด/เลื่อนหน้าได้ตามปกติ)
+// ลากผ่านรายการไหน รายการที่ลากจะย้ายไปแทนที่ตรงนั้นทันที ใช้ได้ทั้งแบบตารางและแบบแถว
+// ปล่อยแล้วลำดับเปลี่ยน -> เรียก onDone(รายการ id ตามลำดับใหม่)
+// คีย์บอร์ด: โฟกัสที่ปุ่มจับแล้วกดลูกศร ขึ้น/ซ้าย = เลื่อนขึ้น, ลง/ขวา = เลื่อนลง
+function makeSortable(list, onDone) {
+  const ids = () => [...list.querySelectorAll(":scope > [data-sort-id]")].map((el) => el.dataset.sortId);
+
+  list.addEventListener("pointerdown", (e) => {
+    const handle = e.target.closest(".drag-handle");
+    if (!handle || e.button > 0) return;
+    const item = handle.closest("[data-sort-id]");
+    e.preventDefault();
+    const before = ids().join();
+    item.classList.add("dragging");
+    list.classList.add("sorting");
+
+    // ฟังที่ window ไม่ใช้ setPointerCapture: ย้ายรายการใน DOM แล้วเบราว์เซอร์จะปล่อย capture ทิ้ง ทำให้ไม่ได้ยินตอนปล่อยนิ้ว
+    const move = (ev) => {
+      if (ev.pointerId !== e.pointerId) return;
+      // ลากเข้าใกล้ขอบจอ -> เลื่อนหน้าให้ (รายการยาวเกินจอ)
+      if (ev.clientY < 70) scrollBy(0, -12);
+      else if (ev.clientY > innerHeight - 70) scrollBy(0, 12);
+      const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest("[data-sort-id]");
+      if (!over || over === item || over.parentElement !== list) return;
+      // อยู่หลังรายการที่ลาก -> ไปต่อท้ายมัน, อยู่ก่อน -> ไปแทรกหน้ามัน
+      const after = item.compareDocumentPosition(over) & Node.DOCUMENT_POSITION_FOLLOWING;
+      list.insertBefore(item, after ? over.nextSibling : over);
+    };
+    const end = (ev) => {
+      if (ev.pointerId !== e.pointerId) return;
+      removeEventListener("pointermove", move);
+      removeEventListener("pointerup", end);
+      removeEventListener("pointercancel", end);
+      item.classList.remove("dragging");
+      list.classList.remove("sorting");
+      if (ids().join() !== before) onDone(ids());
+    };
+    addEventListener("pointermove", move);
+    addEventListener("pointerup", end);
+    addEventListener("pointercancel", end);
+  });
+
+  list.addEventListener("keydown", (e) => {
+    const handle = e.target.closest(".drag-handle");
+    const step = { ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 }[e.key];
+    if (!handle || !step) return;
+    e.preventDefault();
+    const item = handle.closest("[data-sort-id]");
+    const sib = step < 0 ? item.previousElementSibling : item.nextElementSibling;
+    if (!sib?.dataset.sortId) return;
+    list.insertBefore(item, step < 0 ? sib : sib.nextSibling);
+    handle.focus();
+    onDone(ids());
+  });
+}

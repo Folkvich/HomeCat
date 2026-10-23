@@ -215,3 +215,20 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
   button:active, label.button:active, .cat-card:active, .fab:active { transform: none !important; }
 }
 .avatar-picker .avatar:active { transform: scale(.85); }
+
+/* ----- ลากเรียงลำดับ (แมว + สมาชิกในบ้าน) ----- */
+/* ปุ่มจับ: แตะค้างแล้วลาก (touch-action: none = ลากที่ปุ่มนี้ไม่เลื่อนหน้าจอ แต่ส่วนอื่นยังเลื่อนได้) */
+.drag-handle {
+  touch-action: none; cursor: grab; flex: none;
+  min-height: 0; width: 36px; height: 36px; padding: 0; border: none; border-radius: 8px;
+  background: transparent; color: var(--muted); font-size: 1.15rem; line-height: 1;
+}
+.drag-handle:active:not(:disabled) { transform: none; filter: none; cursor: grabbing; color: var(--accent); }
+.sorting { -webkit-user-select: none; user-select: none; }
+.sorting, .sorting * { cursor: grabbing !important; }
+/* รายการที่กำลังลาก: ยกขึ้น มีขอบสีหลัก */
+[data-sort-id].dragging {
+  position: relative; z-index: 2; transform: scale(1.03) !important; filter: none !important;
+  box-shadow: 0 0 0 2px var(--accent), 0 10px 24px rgba(0,0,0,.18) !important;
+  background: var(--card);
+}
