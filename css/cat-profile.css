@@ -1,0 +1,25 @@
+/* ===== Component: โปรไฟล์แมว ===== */
+/* หัวโปรไฟล์: รูปกลม + ชื่อ + สรุปสั้น ๆ อยู่แถวเดียวกัน */
+.profile .head { display: flex; gap: 14px; align-items: center; }
+.profile .pic { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: var(--pic-bg); display: grid; place-items: center; font-size: 2.4rem; flex: none; }
+.profile img { width: 100%; height: 100%; object-fit: cover; }
+.profile h2 { font-size: 1.4rem; margin: 0; overflow-wrap: anywhere; }
+.profile .summary { margin: 2px 0 0; color: var(--muted); font-size: .9rem; }
+
+/* "ดูข้อมูลเพิ่มเติม" กดกาง/พับ */
+.profile details { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 4px; }
+.profile summary { cursor: pointer; color: var(--accent); font-weight: 600; padding: 8px 0; list-style: none; }
+.profile summary::-webkit-details-marker { display: none; }
+.profile summary::after { content: " ▾"; }
+.profile details[open] summary::after { content: " ▴"; }
+.profile dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 4px 0 12px; }
+.profile dt { color: var(--muted); }
+.profile dd { margin: 0; overflow-wrap: anywhere; }
+.profile .actions { display: flex; gap: 8px; }
+.profile .actions button { flex: 1; }
+
+/* คอม: รูปใหญ่ขึ้น */
+@media (min-width: 900px) {
+  .profile .pic { width: 96px; height: 96px; font-size: 3rem; }
+  .profile .actions button { flex: none; min-width: 110px; }
+}

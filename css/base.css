@@ -1,0 +1,175 @@
+/* ===== พื้นฐานทั้งเว็บ: สี ตัวอักษร เลย์เอาต์ ช่องกรอก ปุ่ม การ์ด ===== */
+/* ออกแบบสำหรับมือถือก่อน แล้วค่อยปรับเพิ่มสำหรับจอใหญ่ใน @media (min-width: ...) */
+:root {
+  --bg: #fdf6ee;
+  --card: #fff;
+  --ink: #3b2f2f;
+  --muted: #8a7b72;
+  --accent: #e07a3f;
+  --accent-soft: #fff3e8;
+  --line: #eadfd3;
+  --danger: #c0392b;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(59,47,47,.04), 0 4px 14px rgba(59,47,47,.06);
+  --field: #fff;                       /* พื้นช่องกรอกและปุ่ม */
+  --pic-bg: #f4e6d6;                   /* พื้นหลังรูปแมว */
+  --top-bg: rgba(253,246,238,.92);     /* แถบด้านบน (โปร่งนิดหน่อย) */
+  --on-accent: #fff;                   /* ตัวหนังสือบนปุ่มสีส้ม */
+  color-scheme: light;
+}
+/* โหมดมืด: เปลี่ยนตามการตั้งค่าของเครื่อง */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f1a17;
+    --card: #2a2320;
+    --ink: #f3e9e0;
+    --muted: #a99b91;
+    --accent: #e8894f;
+    --accent-soft: #3d2b20;
+    --line: #3d332d;
+    --danger: #ec7063;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    --field: #332a26;
+    --pic-bg: #3a302a;
+    --top-bg: rgba(31,26,23,.9);
+    --on-accent: #1f1a17;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ----- แถบด้านบน: ติดจอตลอดเวลาเลื่อน ----- */
+.top {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--top-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+/* เปิดแบบแอปเต็มจอ: เว้นที่ให้รอยบาก/แถบสถานะของ iPhone */
+.top { padding-top: env(safe-area-inset-top); }
+.top-inner { max-width: 1100px; margin: 0 auto; padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 10px; }
+.top h1 { margin: 0; font-size: 1.35rem; white-space: nowrap; }
+.top p { margin: 0; color: var(--muted); font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top .back { font-size: 1.2rem; width: 40px; height: 40px; padding: 0; border-radius: 50%; flex: none; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 16px max(16px, env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+h2 { font-size: 1.1rem; margin: 0 0 12px; }
+.muted { color: var(--muted); text-align: center; }
+
+.bar, .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.bar { margin-bottom: 16px; }
+.bar input { flex: 1; min-width: 0; }
+.end { justify-content: flex-end; }
+
+/* ----- ช่องกรอกและปุ่ม ----- */
+/* ตัวอักษร 16px ขึ้นไป กัน iPhone ซูมหน้าจอเองตอนแตะช่องกรอก */
+input, select, textarea, button {
+  font: inherit;
+  font-size: 16px;
+  padding: 9px 12px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  color: inherit;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.row input[name=text] { flex: 1; min-width: 160px; }
+button { cursor: pointer; white-space: nowrap; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+button.danger-fill { background: var(--danger); border-color: var(--danger); color: var(--on-accent); }
+button.link { background: none; border: none; color: var(--accent); padding: 4px 0; margin-bottom: 8px; }
+button.danger { color: var(--danger); }
+
+/* label ที่ทำหน้าที่เป็นปุ่ม (เช่น ปุ่มเลือกไฟล์) */
+label.button {
+  display: inline-flex; align-items: center; cursor: pointer; min-height: 42px;
+  padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--field); color: var(--ink);
+}
+/* hover เฉพาะเครื่องที่มีเมาส์ (บนมือถือ hover จะค้างหลังแตะ) */
+@media (hover: hover) {
+  button:hover, label.button:hover { filter: brightness(.96); }
+}
+button:active, label.button:active { transform: scale(.97); }
+button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ซ่อน element ที่มี hidden เสมอ (กัน CSS อื่นไปทับ display) */
+[hidden] { display: none !important; }
+
+/* ----- การ์ด ----- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+/* หัวการ์ดที่มีของอยู่ด้านขวา (เช่น ช่องกรองประวัติ) */
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
+.card-head h2 { margin: 0; }
+.card-head select { width: auto; max-width: 60%; }
+
+/* ----- หน้ารายละเอียดแมว: มือถือเรียงแถวเดียว, คอมแบ่ง 2 คอลัมน์ ----- */
+@media (min-width: 900px) {
+  .detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  .detail-grid .col:last-child .card { position: sticky; top: 76px; max-height: calc(100vh - 92px); overflow: auto; }
+}
+
+/* ปุ่มสำรอง/นำเข้าข้อมูล ด้านล่างหน้ารายชื่อ */
+.backup { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 32px; padding-top: 16px; border-top: 1px dashed var(--line); }
+
+/* ----- หน้าว่าง (ยังไม่มีแมว) ----- */
+.empty { text-align: center; padding: 40px 16px 8px; }
+.empty-pic { width: 120px; height: 120px; margin: 0 auto 16px; border-radius: 50%; background: var(--pic-bg); display: grid; place-items: center; font-size: 4rem; }
+.empty h2 { font-size: 1.3rem; margin-bottom: 4px; }
+.empty p { color: var(--muted); margin: 0 auto 20px; max-width: 280px; }
+.empty button { padding-inline: 24px; }
+
+/* ----- ปุ่มลอยมุมขวาล่าง (เพิ่มบันทึก) ----- */
+.fab {
+  position: fixed; z-index: 4;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(20px, calc(env(safe-area-inset-bottom) + 8px));
+  min-height: 52px; padding: 0 22px; border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(224,122,63,.4);
+}
+/* เว้นที่ด้านล่าง ไม่ให้ปุ่มลอยบังรายการสุดท้ายในประวัติ */
+#detailView { padding-bottom: 72px; }
+
+/* วันที่แบบไทยใต้ช่องเลือกวันที่ */
+.date-hint { display: block; margin-top: 3px; color: var(--muted); font-size: .8rem; min-height: 1em; }
+.date-hint:empty { display: none; }
+
+/* ----- หน้าล็อกอิน / สร้างบ้าน ----- */
+.center-view { min-height: 60vh; display: grid; place-items: center; }
+.auth-card { width: min(400px, 100%); text-align: center; padding: 28px 20px; }
+.auth-card .empty-pic { width: 96px; height: 96px; font-size: 3.2rem; }
+.auth-card h2 { font-size: 1.3rem; margin-bottom: 4px; }
+.auth-card form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.auth-card form p { text-align: center; margin: 0 0 6px; }
+.auth-card label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: .9rem; }
+.auth-card input { color: var(--ink); }
+.auth-card input[name=code] { text-align: center; font-size: 1.3rem; letter-spacing: .3em; }
+.auth-card input[name=code]::placeholder { letter-spacing: normal; font-size: 1rem; } /* ภาษาไทยห่างตัวอักษรแล้วสระลอย */
+.auth-card .link { align-self: center; }
+.auth-card .field-error { text-align: center; margin-top: 12px; }
+.or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .85rem; margin: 18px 0; }
+.or::before, .or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+
+/* ปุ่มบ้าน มุมขวาของแถบบน */
+.top .house { margin-left: auto; flex: none; width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 1.1rem; }
+
+/* ตัวเลือกอีโมจิโปรไฟล์ */
+.avatar-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 4px 0 6px; }
+.avatar-picker .avatar { font-size: 1.6rem; padding: 0; aspect-ratio: 1; min-height: 0; border-radius: 50%; }
+.avatar-picker .avatar.picked { border: 2px solid var(--accent); background: var(--accent-soft); }

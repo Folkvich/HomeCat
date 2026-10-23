@@ -1,0 +1,30 @@
+/* ===== Component: การ์ดแมวในหน้ารายชื่อ ===== */
+/* มือถือ 2 ใบต่อแถว (แม้จอแคบ 320px) จอใหญ่ขึ้นเพิ่มจำนวนเอง */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(130px, 100%), 1fr)); gap: 12px; }
+.cat-card {
+  cursor: pointer; text-align: center; padding: 0; overflow: hidden; margin: 0;
+  transition: transform .15s, box-shadow .15s;
+}
+@media (hover: hover) {
+  .cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(59,47,47,.12); }
+}
+.cat-card:active { transform: scale(.98); }
+.cat-card .pic { position: relative; aspect-ratio: 4 / 3; background: var(--pic-bg); display: grid; place-items: center; font-size: 3.2rem; }
+.cat-card img { width: 100%; height: 100%; object-fit: cover; }
+.cat-card .info { padding: 8px 10px 12px; }
+.cat-card b { display: block; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-card small { display: block; color: var(--muted); font-size: .8rem; }
+
+/* ป้ายนัดมุมซ้ายบนของรูป */
+.cat-card .badge {
+  position: absolute; top: 8px; left: 8px;
+  padding: 2px 9px; border-radius: 999px; font-size: .75rem; font-weight: 600;
+  color: #fff; background: var(--accent);
+}
+.cat-card .badge.overdue { background: var(--danger); }
+
+@media (min-width: 700px) {
+  .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .cat-card .pic { font-size: 4rem; }
+  .cat-card small { font-size: .875rem; }
+}

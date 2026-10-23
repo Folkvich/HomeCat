@@ -1,0 +1,30 @@
+/* ===== Component: กราฟน้ำหนัก ===== */
+/* กว้างเต็มการ์ด สูงตามสัดส่วน (ตัวหนังสือในกราฟจะไม่ถูกยืด) */
+#chart { display: block; width: 100%; height: auto; overflow: visible; }
+#chart polyline { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+#chart text { fill: var(--muted); font-size: 12px; }
+#chart circle { fill: var(--accent); }
+#chart text.latest { fill: var(--ink); font-weight: 700; }
+#chart line.grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+#chart text.axis { font-size: 11px; }
+
+/* บรรทัดสรุปใต้หัวการ์ด */
+.weight-summary { margin: -6px 0 10px; color: var(--muted); font-size: .9rem; }
+.weight-summary b { color: var(--ink); }
+
+/* กล่องเตือนน้ำหนักเปลี่ยนเร็ว */
+.alert { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: .9rem; line-height: 1.45; }
+.alert.danger { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+.alert.warn { background: var(--accent-soft); color: var(--accent); }
+
+/* ===== การ์ดสรุปสุขภาพ ===== */
+.health { list-style: none; margin: 0; padding: 0; }
+.health li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 9px 0; }
+.health li + li { border-top: 1px solid var(--line); }
+.health .label { font-weight: 600; }
+.health .detail { color: var(--muted); font-size: .9rem; }
+.health .muted-text { opacity: .8; }
+.health .overdue .detail b { color: var(--danger); }
+.health .soon .detail b { color: var(--accent); }
+.health .overdue { box-shadow: inset 3px 0 0 var(--danger); padding-left: 10px; }
+.health .soon { box-shadow: inset 3px 0 0 var(--accent); padding-left: 10px; }

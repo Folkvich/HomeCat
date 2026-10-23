@@ -1,0 +1,21 @@
+/* ===== Component: กล่อง "นัดที่ใกล้ถึง" ===== */
+.reminders ul { list-style: none; margin: 0 -6px; padding: 0; }
+.reminders li {
+  display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline;
+  padding: 8px 6px; border-radius: 8px; cursor: pointer;
+}
+.reminders li + li { border-top: 1px solid var(--line); }
+@media (hover: hover) { .reminders li:hover { background: var(--bg); } }
+.reminders li:active { background: var(--bg); }
+/* ปุ่ม "ดูทั้งหมด" */
+.reminders .more { display: block; margin: 8px auto 0; min-height: 36px; font-weight: 600; }
+/* มือถือ: วันนัดอยู่บรรทัดล่างชิดซ้าย */
+.reminders .due { flex-basis: 100%; color: var(--muted); font-size: .875rem; }
+.reminders .soon .due { color: var(--accent); font-weight: bold; }
+.reminders .overdue .due { color: var(--danger); font-weight: bold; }
+
+/* จอใหญ่: วันนัดอยู่บรรทัดเดียวกัน ชิดขวา */
+@media (min-width: 600px) {
+  .reminders li { flex-wrap: nowrap; }
+  .reminders .due { flex-basis: auto; margin-left: auto; white-space: nowrap; }
+}

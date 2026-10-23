@@ -1,0 +1,65 @@
+/* ===== Component: หน้าต่าง popup (ฟอร์มแมว, ฟอร์มบันทึก, ถามยืนยัน) ===== */
+dialog {
+  border: none; border-radius: var(--radius); padding: 0;
+  width: min(460px, 92vw); max-height: 90vh;
+  max-height: 90dvh; /* ไม่รวมแถบเบราว์เซอร์/คีย์บอร์ดของมือถือ */
+  font-family: inherit; color: var(--ink); background: var(--card);
+  box-shadow: 0 20px 50px rgba(0,0,0,.25);
+}
+dialog::backdrop { background: rgba(0,0,0,.4); }
+/* หัว + เนื้อหาเลื่อนได้ + ปุ่มติดด้านล่างเสมอ */
+dialog form { display: flex; flex-direction: column; max-height: 90vh; max-height: 90dvh; }
+dialog h2 { margin: 0; padding: 18px 20px 10px; }
+.dialog-body { overflow-y: auto; padding: 4px 20px 8px; }
+.dialog-foot { padding: 12px 20px; border-top: 1px solid var(--line); background: var(--card); }
+.dialog-foot button { min-width: 96px; }
+dialog label { display: block; margin-bottom: 12px; color: var(--muted); font-size: .9rem; }
+dialog input, dialog select, dialog textarea { width: 100%; margin-top: 3px; color: var(--ink); }
+/* ข้อความเตือนเมื่อกรอกไม่ครบ */
+dialog input.invalid { border-color: var(--danger); }
+.field-error { display: block; margin-top: 4px; color: var(--danger); font-size: .82rem; }
+.field-error[hidden] { display: none; }
+
+/* ส่วนเลือกรูป: รูปตัวอย่างวงกลม + ปุ่ม */
+.photo-pick { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.photo-pick .pic { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; background: var(--pic-bg); display: grid; place-items: center; font-size: 2.5rem; flex: none; }
+.photo-pick img { width: 100%; height: 100%; object-fit: cover; }
+.photo-pick label.button { margin: 0 6px 0 0; }
+
+/* มือถือ: เลื่อนขึ้นมาจากด้านล่างจอแบบแอป */
+@media (max-width: 599px) {
+  dialog {
+    width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 18px 18px 0 0;
+    animation: sheet-up .2s ease-out;
+  }
+  .dialog-foot { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .dialog-foot button { flex: 1; }
+}
+/* หน้าต่างถามยืนยัน: เล็ก อยู่กลางจอเสมอ (แม้บนมือถือ) */
+dialog.confirm { width: min(340px, 88vw); margin: auto; border-radius: var(--radius); animation: none; }
+dialog.confirm p { margin: 0; padding: 22px 20px 16px; font-size: 1.05rem; color: var(--ink); }
+dialog.confirm .dialog-foot { padding-bottom: 12px; }
+
+@keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
+
+/* ----- หน้าต่างบ้านของฉัน ----- */
+.dialog-wrap { display: flex; flex-direction: column; max-height: 90vh; max-height: 90dvh; }
+dialog h3 { font-size: .95rem; margin: 18px 0 6px; }
+.small { font-size: .875rem; text-align: left; margin: 0 0 10px; }
+.invite { display: flex; gap: 8px; align-items: center; }
+.invite code {
+  flex: 1; text-align: center; font-size: 1.4rem; font-weight: 700; letter-spacing: .15em;
+  padding: 8px; border: 1px dashed var(--accent); border-radius: 10px; background: var(--accent-soft); color: var(--ink);
+}
+.members { list-style: none; margin: 0; padding: 0; }
+.members li { padding: 8px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.members .tag { margin-left: 6px; font-size: .75rem; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 1px 8px; }
+.house-foot { justify-content: flex-end; }
+.house-foot .danger { margin-right: auto; }
+@media (max-width: 599px) {
+  .house-foot { flex-wrap: wrap; }
+  .house-foot .danger { flex-basis: 100%; margin-right: 0; order: 3; background: none; border: none; }
+}
+.me-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-weight: 600; }
+.me-row .link { margin: 0; }
+.member-avatar { font-size: 1.3rem; margin-right: 8px; }

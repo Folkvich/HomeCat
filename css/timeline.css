@@ -1,0 +1,15 @@
+/* ===== Component: ไทม์ไลน์ประวัติ ===== */
+.timeline { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+.timeline li { position: relative; padding: 4px 8px 14px 16px; border-radius: 8px; overflow-wrap: anywhere; }
+.timeline li::before {
+  content: ""; position: absolute; left: -22px; top: 10px;
+  width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+}
+.timeline .date { color: var(--muted); font-size: .85rem; }
+.timeline .next { color: var(--muted); font-size: .85rem; margin-top: 2px; }
+.timeline .next.soon { color: var(--accent); font-weight: 600; }
+.timeline .next.overdue { color: var(--danger); font-weight: 600; }
+.timeline .tools { float: right; display: flex; gap: 2px; margin-left: 8px; }
+/* ปุ่มเล็กแต่พื้นที่กดกว้างพอสำหรับนิ้ว */
+.timeline .tools button { background: none; border: none; color: var(--muted); padding: 0; min-height: 36px; width: 36px; border-radius: 50%; font-size: 15px; }
+@media (hover: hover) { .timeline .tools button:hover { background: var(--bg); } }

@@ -1,0 +1,11 @@
+/* ===== Component: ข้อความแจ้งเตือนด้านล่างจอ ===== */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.2); z-index: 10; max-width: 90vw; text-align: center;
+  pointer-events: none; /* ไม่บังปุ่มที่อยู่ข้างใต้ กดทะลุได้ */
+}
+.toast { bottom: max(24px, env(safe-area-inset-bottom)); animation: toast-in .2s ease-out; }
+@keyframes toast-in { from { transform: translate(-50%, 10px); opacity: 0; } }
+/* หน้ารายละเอียดมีปุ่มลอยมุมล่าง -> ยกข้อความขึ้นไปอยู่เหนือปุ่ม */
+body:has(#detailView:not([hidden])) .toast { bottom: calc(max(20px, env(safe-area-inset-bottom) + 8px) + 64px); }

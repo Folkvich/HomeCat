@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- ติดตั้งเป็นแอปบนมือถือ (เพิ่มลงหน้าจอโฮม) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#fdf6ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1f1a17" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="HomeCat">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>HomeCat – ประวัติแมวในบ้าน</title>
+  <!-- ฟอนต์ Sarabun (ถ้าไม่มีเน็ตจะใช้ฟอนต์ของเครื่องแทน) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/cat-card.css">
+  <link rel="stylesheet" href="css/reminders.css">
+  <link rel="stylesheet" href="css/cat-profile.css">
+  <link rel="stylesheet" href="css/timeline.css">
+  <link rel="stylesheet" href="css/weight-chart.css">
+  <link rel="stylesheet" href="css/dialog.css">
+  <link rel="stylesheet" href="css/toast.css">
+</head>
+<body>
+  <!-- แถบด้านบน (ติดจอตลอดเวลาเลื่อน) ปุ่มกลับจะโผล่เฉพาะตอนอยู่หน้ารายละเอียดแมว -->
+  <header class="top">
+    <div class="top-inner">
+      <button id="backBtn" class="back" title="กลับหน้ารายชื่อ" hidden>←</button>
+      <h1 id="topTitle">🐱 HomeCat</h1>
+      <p id="topSubtitle">ประวัติแมวในบ้าน</p>
+      <button id="houseBtn" class="house" title="บ้านและบัญชี" hidden>🏠</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== กำลังเปิดแอป (เช็กการล็อกอิน) ===== -->
+    <section id="bootView" class="center-view"><p class="muted">กำลังโหลด...</p></section>
+
+    <!-- ===== หน้าตั้งโปรไฟล์ (ครั้งแรก / แก้ไข) ===== -->
+    <section id="profileView" class="center-view" hidden>
+      <div class="card auth-card">
+        <h2 id="profileTitle">คุณชื่ออะไร?</h2>
+        <p class="muted">คนในบ้านจะเห็นชื่อและรูปนี้ ไม่ต้องใช้อีเมลหรือรหัสผ่าน</p>
+        <form id="profileForm" novalidate>
+          <input name="name" placeholder="เช่น โฟลค์, แม่, พี่บี" maxlength="30" autocomplete="nickname">
+          <input name="avatar" type="hidden">
+          <div id="avatarPicker" class="avatar-picker" role="group" aria-label="เลือกรูปโปรไฟล์"></div>
+          <button class="primary" id="saveProfileBtn">เริ่มใช้งาน</button>
+          <button type="button" class="link" id="cancelProfileBtn" hidden>ยกเลิก</button>
+        </form>
+        <p id="profileError" class="field-error" hidden></p>
+      </div>
+    </section>
+
+    <!-- ===== หน้าสร้าง/เข้าร่วมบ้าน (ผู้ใช้ใหม่) ===== -->
+    <section id="householdView" class="center-view" hidden>
+      <div class="card auth-card">
+        <div class="empty-pic">🏠</div>
+        <h2>บ้านของคุณ</h2>
+        <p class="muted">คนในบ้านเดียวกันจะเห็นและบันทึกแมวชุดเดียวกัน</p>
+        <form id="createHouseForm" novalidate>
+          <label>สร้างบ้านใหม่ <input name="name" placeholder="เช่น บ้านส้มจี๊ด" maxlength="60"></label>
+          <button class="primary">สร้างบ้าน</button>
+        </form>
+        <div class="or">หรือ</div>
+        <form id="joinHouseForm" novalidate>
+          <label>มีรหัสเชิญจากคนในบ้าน <input name="code" placeholder="รหัส 8 ตัว" maxlength="8" autocapitalize="characters"></label>
+          <button>เข้าร่วมบ้าน</button>
+        </form>
+        <p id="householdError" class="field-error" hidden></p>
+      </div>
+    </section>
+
+    <!-- ===== หน้ารายชื่อแมว ===== -->
+    <section id="listView" hidden>
+      <div id="reminders" class="card reminders" hidden></div>
+
+      <div class="bar" id="searchBar">
+        <input id="search" type="search" placeholder="🔍 ค้นหาชื่อแมว...">
+        <button id="addCatBtn" class="primary">+ เพิ่มแมว</button>
+      </div>
+      <div id="cats" class="grid"></div>
+      <div id="empty" class="empty" hidden>
+        <div class="empty-pic">🐱</div>
+        <h2>ยังไม่มีแมวในบ้าน</h2>
+        <p>เพิ่มแมวตัวแรก แล้วเริ่มจดวัคซีน น้ำหนัก และนัดหมอได้เลย</p>
+        <button id="addFirstCatBtn" class="primary">+ เพิ่มแมวตัวแรก</button>
+      </div>
+      <p id="noResult" class="muted" hidden></p>
+
+      <footer class="backup">
+        <button id="exportBtn" title="ดาวน์โหลดข้อมูลทั้งหมดเก็บไว้เป็นไฟล์">📤 สำรองข้อมูล</button>
+        <label class="button" title="โหลดข้อมูลจากไฟล์ที่เคยสำรองไว้">📥 นำเข้าข้อมูล
+          <input id="importFile" type="file" accept="application/json,.json" hidden>
+        </label>
+      </footer>
+    </section>
+
+    <!-- ===== หน้ารายละเอียดแมว ===== -->
+    <section id="detailView" hidden>
+      <!-- บนคอมแบ่งเป็น 2 คอลัมน์ (ซ้าย: โปรไฟล์+กราฟ, ขวา: ประวัติ) บนมือถือเรียงลงมาแถวเดียว -->
+      <div class="detail-grid">
+        <div class="col">
+          <div id="profile" class="card profile"></div>
+          <div class="card">
+            <h2>สรุปสุขภาพ</h2>
+            <ul id="healthList" class="health"></ul>
+          </div>
+          <div class="card">
+            <h2>น้ำหนัก</h2>
+            <p id="weightSummary" class="weight-summary" hidden></p>
+            <p id="weightAlert" class="alert" role="status" hidden></p>
+            <svg id="chart" viewBox="0 0 400 170"></svg>
+            <p id="noChart" class="muted" hidden>บันทึกน้ำหนักอย่างน้อย 2 ครั้งเพื่อดูกราฟ</p>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head">
+              <h2>ประวัติ</h2>
+              <select id="timelineFilter" aria-label="กรองประเภทประวัติ"></select>
+            </div>
+            <ul id="timeline" class="timeline"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ปุ่มลอยมุมขวาล่าง: เพิ่มบันทึกได้ทันทีไม่ว่าจะเลื่อนอยู่ตรงไหน -->
+      <button id="addEventBtn" class="primary fab">+ เพิ่มบันทึก</button>
+    </section>
+  </main>
+
+  <!-- ===== หน้าต่างฟอร์มเพิ่ม/แก้ไขแมว ===== -->
+  <dialog id="catDialog">
+    <form id="catForm" method="dialog" novalidate>
+      <h2 id="dialogTitle">เพิ่มแมว</h2>
+      <div class="dialog-body">
+      <div class="photo-pick">
+        <div id="photoPreview" class="pic">🐱</div>
+        <div>
+          <label class="button">📷 เลือกรูป <input name="photo" type="file" accept="image/*" hidden></label>
+          <button type="button" id="removePhotoBtn" class="danger" hidden>ลบรูป</button>
+        </div>
+      </div>
+      <label>ชื่อ * <input name="name" required placeholder="เช่น ส้มจี๊ด" aria-describedby="nameError">
+        <small id="nameError" class="field-error" hidden>กรุณากรอกข้อมูล</small></label>
+      <label>สายพันธุ์ <input name="breed" placeholder="เช่น วิเชียรมาศ"></label>
+      <label>เพศ
+        <select name="sex"><option>ผู้</option><option>เมีย</option><option>ไม่ทราบ</option></select>
+      </label>
+      <label>วันเกิด / วันที่รับมา <input name="born" type="date"></label>
+      <label>สี/ลักษณะ <input name="color" placeholder="เช่น ส้มลายสลิด"></label>
+      <label>ไมโครชิป
+        <select name="chip"><option value="no">ไม่ได้ฝัง</option><option value="yes">ฝังแล้ว</option></select>
+      </label>
+      <div id="chipFields" hidden>
+        <label>วันที่ฝังชิป <input name="chipDate" type="date"></label>
+        <label>สถานที่ฝัง/คลินิก <input name="chipPlace" placeholder="เช่น ชื่อคลินิก, ตำแหน่งที่ฝัง"></label>
+      </div>
+      <label>ทำหมัน
+        <select name="neutered"><option value="no">ยังไม่ทำหมัน</option><option value="yes">ทำหมันแล้ว</option><option value="unknown">ไม่ทราบ</option></select>
+      </label>
+      <label>หมายเหตุ <textarea name="note" rows="2" placeholder="แพ้อาหาร, โรคประจำตัว ฯลฯ"></textarea></label>
+      </div>
+      <div class="row end dialog-foot">
+        <button type="button" id="cancelBtn">ยกเลิก</button>
+        <button class="primary">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== หน้าต่างฟอร์มเพิ่ม/แก้ไขบันทึก ===== -->
+  <dialog id="eventDialog">
+    <form id="eventForm" method="dialog" novalidate>
+      <h2 id="eventFormTitle">เพิ่มบันทึก</h2>
+      <div class="dialog-body">
+        <label>วันที่ <input type="date" name="date" required></label>
+        <label>ประเภท
+          <select name="type">
+            <option value="vaccine">💉 วัคซีน</option>
+            <option value="vet">🩺 พบสัตวแพทย์</option>
+            <option value="weight">⚖️ น้ำหนัก</option>
+            <option value="deworm">💊 ถ่ายพยาธิ/ยากันเห็บหมัด</option>
+            <option value="grooming">🛁 อาบน้ำ/ตัดขน</option>
+            <option value="note">📝 บันทึกทั่วไป</option>
+          </select>
+        </label>
+        <label id="weightField" hidden>น้ำหนัก (กก.) <input name="weight" type="number" inputmode="decimal" step="0.01" min="0" placeholder="เช่น 4.25">
+          <small id="weightError" class="field-error" hidden>กรุณาใส่น้ำหนักเป็นตัวเลขมากกว่า 0</small></label>
+        <label>รายละเอียด <input name="text" placeholder="เช่น วัคซีนรวม เข็มที่ 2, คลินิก...">
+          <small id="textError" class="field-error" hidden>กรุณาใส่รายละเอียด</small></label>
+        <label id="nextField">นัดครั้งถัดไป (ถ้ามี) <input name="next" type="date"></label>
+      </div>
+      <div class="row end dialog-foot">
+        <button type="button" id="cancelEventBtn">ยกเลิก</button>
+        <button class="primary" id="saveEventBtn">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== หน้าต่างบ้านของฉัน ===== -->
+  <dialog id="houseDialog">
+    <div class="dialog-wrap">
+      <h2>🏠 <span id="houseName"></span></h2>
+      <div class="dialog-body">
+        <div class="me-row"><span id="myProfile"></span><button type="button" id="editProfileBtn" class="link">แก้ไขโปรไฟล์</button></div>
+        <p class="muted small">ชวนคนในบ้านมาดูแลแมวด้วยกัน: ให้เขาเปิด HomeCat ตั้งโปรไฟล์ แล้วกรอกรหัสนี้ (จดรหัสไว้ด้วย ใช้เข้าบ้านอีกครั้งตอนเปลี่ยนเครื่อง)</p>
+        <div class="invite">
+          <code id="inviteCode"></code>
+          <button type="button" id="shareInviteBtn" class="primary">แชร์รหัสเชิญ</button>
+        </div>
+        <h3>สมาชิก</h3>
+        <ul id="houseMembers" class="members"></ul>
+      </div>
+      <div class="row dialog-foot house-foot">
+        <button type="button" id="leaveHouseBtn" class="danger">ออกจากบ้าน</button>
+        <button type="button" id="signOutBtn">ออกจากเครื่องนี้</button>
+        <button type="button" id="closeHouseBtn" class="primary">ปิด</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ===== หน้าต่างถามยืนยัน (แทน confirm ของเบราว์เซอร์) ===== -->
+  <dialog id="confirmDialog" class="confirm">
+    <form method="dialog">
+      <p id="confirmMessage"></p>
+      <div class="row end dialog-foot">
+        <button value="cancel">ยกเลิก</button>
+        <button value="ok" id="confirmOkBtn" class="primary">ตกลง</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ข้อความแจ้งเตือนเล็ก ๆ ด้านล่างจอ -->
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <!-- ลำดับสำคัญ: ไลบรารี -> ค่าคงที่ -> ข้อมูล -> ฟังก์ชันช่วย -> components -> หน้า -> เริ่มทำงาน -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/helpers.js"></script>
+  <script src="js/components/toast.js"></script>
+  <script src="js/components/confirm-dialog.js"></script>
+  <script src="js/components/account.js"></script>
+  <script src="js/components/reminders.js"></script>
+  <script src="js/components/cat-list.js"></script>
+  <script src="js/components/backup.js"></script>
+  <script src="js/components/cat-profile.js"></script>
+  <script src="js/components/timeline.js"></script>
+  <script src="js/components/weight-chart.js"></script>
+  <script src="js/components/health-summary.js"></script>
+  <script src="js/components/cat-form.js"></script>
+  <script src="js/components/event-form.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
