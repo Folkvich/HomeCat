@@ -27,8 +27,16 @@ dialog > form, .dialog-wrap { display: flex; flex-direction: column; max-height:
 .dialog-foot { flex: none; display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--card); }
 .dialog-foot button { min-width: 96px; min-height: 46px; }
 
-dialog label { display: block; margin-bottom: 12px; color: var(--muted); font-size: .9rem; }
-dialog input, dialog select, dialog textarea { width: 100%; margin-top: 4px; color: var(--ink); }
+/* ป้ายชื่อช่อง: ตัวเล็กกว่าช่องกรอกนิดหนึ่ง หนาขึ้น อ่านง่าย ห่างจากช่องกำลังดี */
+dialog label:not(.button) {
+  display: block; margin-bottom: 16px;
+  color: var(--label); font-size: .875rem; font-weight: 600; line-height: 1.35; letter-spacing: .01em;
+}
+dialog label:not(.button):focus-within { color: var(--accent); } /* ช่องที่กำลังกรอก ป้ายเปลี่ยนสี */
+dialog .field-error { font-weight: 500; }
+dialog input, dialog select, dialog textarea {
+  width: 100%; margin-top: 6px; color: var(--ink); font-weight: 400; letter-spacing: normal;
+}
 dialog textarea { resize: vertical; min-height: 64px; }
 /* ช่องวันที่ของ iPhone: ไม่ยุบเตี้ยตอนว่าง และตัวหนังสือชิดซ้ายเหมือนช่องอื่น */
 dialog input[type="date"] { -webkit-appearance: none; appearance: none; display: block; min-height: 44px; text-align: left; }
@@ -79,7 +87,7 @@ html.kb-open .dialog-foot { padding-bottom: 10px; }
 /* จอเตี้ย (มือถือแนวนอน): ประหยัดความสูง */
 @media (max-height: 500px) {
   .dialog-head { padding-top: 16px; padding-bottom: 2px; }
-  dialog label { margin-bottom: 8px; }
+  dialog label:not(.button) { margin-bottom: 10px; }
   .dialog-foot { padding-top: 8px; }
   .dialog-foot button { min-height: 40px; }
   .photo-pick { margin-bottom: 8px; }

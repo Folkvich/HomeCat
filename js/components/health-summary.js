@@ -11,7 +11,7 @@ const HEALTH_ITEMS = [
 
 // สรุปเรื่องเดียว: { last, due, level } level = "overdue" | "soon" | "" | "none" (ยังไม่เคยบันทึก)
 function healthStatus(c, item) {
-  const last = c.events.filter((e) => e.type === item.type).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const last = latestOfType(c, item.type);
   if (!last) return { level: "none" };
   const due = last.next || (item.every && addDays(last.date, item.every));
   return { last, due, level: due ? dueLevel(daysUntil(due)) : "" };

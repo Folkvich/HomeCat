@@ -44,7 +44,18 @@ function latestWeight(c) {
   return ws.length ? ws[0].weight : null;
 }
 
-// คำนวณอายุแมวจากวันเกิด แสดงเป็น "X ปี Y เดือน" หรือ "Y เดือน" ถ้ายังไม่ถึงปี
+// บันทึกล่าสุดของประเภทนั้น (null ถ้าไม่มี)
+// ถ้าวันเดียวกันมีหลายบันทึก เลือกอันที่ใส่ "นัดครั้งถัดไป" ไว้ก่อน (การ์ดสรุปสุขภาพกับกล่องนัดจะได้ตรงกัน)
+function latestOfType(c, type) {
+  let best = null;
+  for (const e of c.events) {
+    if (e.type !== type) continue;
+    if (!best || e.date > best.date || (e.date === best.date && e.next && !best.next)) best = e;
+  }
+  return best;
+}
+
+// คำนวณอายุแมวจากวันเกิด แสดงเป็น "X ปี Y เดือน", "Y เดือน" หรือ ถ้ายังไม่ถึงเดือน "X สัปดาห์" / "X วัน"
 function calculateAge(born) {
   if (!born) return "-";
   const b = new Date(born), n = new Date();
@@ -52,6 +63,10 @@ function calculateAge(born) {
   let m = (n.getFullYear() - b.getFullYear()) * 12 + n.getMonth() - b.getMonth();
   if (n.getDate() < b.getDate()) m--; // ยังไม่ถึงวันเกิดของเดือนนี้ ลบออก 1 เดือน
   if (m < 0) return "-";              // วันเกิดอยู่ในอนาคต
+  if (m === 0) {                      // ลูกแมวยังไม่ถึงเดือน: นับเป็นวัน/สัปดาห์
+    const d = -daysUntil(born);
+    return d < 1 ? "เกิดวันนี้" : d < 14 ? `${d} วัน` : `${Math.floor(d / 7)} สัปดาห์`;
+  }
   const y = Math.floor(m / 12);
   return y ? `${y} ปี ${m % 12} เดือน` : `${m} เดือน`;
 }

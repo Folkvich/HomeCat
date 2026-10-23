@@ -8,11 +8,8 @@ const openGroups = new Set(); // แถวที่กางรายชื่�
 // หานัดของแมวหนึ่งตัว
 // ดูเฉพาะบันทึกล่าสุดของแต่ละประเภท (เช่น ฉีดวัคซีนรอบใหม่แล้ว นัดของรอบเก่าก็ไม่ต้องเตือนอีก)
 function findCatReminders(c) {
-  const latestByType = {};
-  for (const e of c.events) {
-    if (!latestByType[e.type] || e.date > latestByType[e.type].date) latestByType[e.type] = e;
-  }
-  return Object.values(latestByType).filter((e) => e.next)
+  const types = new Set(c.events.map((e) => e.type));
+  return [...types].map((t) => latestOfType(c, t)).filter((e) => e.next)
     .map((e) => ({ cat: c, event: e, days: daysUntil(e.next) }));
 }
 

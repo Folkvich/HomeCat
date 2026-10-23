@@ -15,6 +15,7 @@
   --pic-bg: #f4e6d6;                   /* พื้นหลังรูปแมว */
   --top-bg: rgba(253,246,238,.92);     /* แถบด้านบน (โปร่งนิดหน่อย) */
   --on-accent: #fff;                   /* ตัวหนังสือบนปุ่มสีส้ม */
+  --label: color-mix(in srgb, var(--ink) 80%, var(--card)); /* ป้ายชื่อช่องกรอก: เข้มกว่าตัวเทา อ่อนกว่าตัวหลัก */
   color-scheme: light;
 }
 /* โหมดมืด: เปลี่ยนตามการตั้งค่าของเครื่อง */
@@ -33,6 +34,7 @@
     --pic-bg: #3a302a;
     --top-bg: rgba(31,26,23,.9);
     --on-accent: #1f1a17;
+    --label: color-mix(in srgb, var(--ink) 80%, var(--card));
     color-scheme: dark;
   }
 }
@@ -155,8 +157,8 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
 /* เว้นที่ด้านล่าง ไม่ให้ปุ่มลอยบังรายการสุดท้ายในประวัติ */
 #detailView { padding-bottom: 72px; }
 
-/* วันที่แบบไทยใต้ช่องเลือกวันที่ */
-.date-hint { display: block; margin-top: 3px; color: var(--muted); font-size: .8rem; min-height: 1em; }
+/* วันที่แบบไทยใต้ช่องเลือกวันที่ (ตัวบางปกติ ไม่หนาตามป้ายชื่อช่อง) */
+.date-hint { display: block; margin-top: 4px; color: var(--muted); font-size: .8rem; font-weight: 400; min-height: 1em; }
 .date-hint:empty { display: none; }
 
 /* ----- หน้าล็อกอิน / สร้างบ้าน ----- */
@@ -166,7 +168,9 @@ button:focus-visible, label.button:focus-within, .cat-card:focus-visible { outli
 .auth-card h2 { font-size: 1.3rem; margin-bottom: 4px; }
 .auth-card form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
 .auth-card form p { text-align: center; margin: 0 0 6px; }
-.auth-card label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: .9rem; }
+.auth-card label { display: flex; flex-direction: column; gap: 6px; color: var(--label); font-size: .875rem; font-weight: 600; line-height: 1.35; }
+.auth-card label:focus-within { color: var(--accent); }
+.auth-card label input { font-weight: 400; }
 .auth-card input { color: var(--ink); }
 .auth-card input[name=code] { text-align: center; font-size: 1.3rem; letter-spacing: .3em; }
 .auth-card input[name=code]::placeholder { letter-spacing: normal; font-size: 1rem; } /* ภาษาไทยห่างตัวอักษรแล้วสระลอย */
