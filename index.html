@@ -291,6 +291,24 @@
   <!-- ข้อความแจ้งเตือนเล็ก ๆ ด้านล่างจอ -->
   <div id="toast" class="toast" role="status" popover="manual" hidden></div>
 
+  <!-- กันหน้าค้างที่ "กำลังโหลด...": เปิดแอปพัง หรือรอนานเกิน 15 วินาที -> บอกสาเหตุ + ปุ่มลองใหม่ -->
+  <script>
+    function showBootError(msg) {
+      const v = document.getElementById("bootView");
+      if (v.hidden || v.dataset.failed) return; // เปิดแอปได้แล้ว หรือโชว์ error ไปแล้ว
+      v.dataset.failed = "1";
+      v.innerHTML = `<div class="card auth-card"><h2>เปิดแอปไม่สำเร็จ</h2>
+        <p class="muted">ลองเช็กอินเทอร์เน็ต แล้วกดลองใหม่</p>
+        <p class="muted" style="font-size:.8rem;word-break:break-word"></p>
+        <button class="primary" onclick="location.reload()">ลองใหม่</button></div>`;
+      v.querySelectorAll("p")[1].textContent = msg; // ข้อความ error จริง เอาไว้แคปส่งให้คนดูแลเว็บ
+    }
+    // true = ดักตอนไฟล์ script โหลดไม่ขึ้นด้วย (event นี้ไม่ลอยขึ้นมาถึง window เอง)
+    addEventListener("error", (e) => showBootError(e.message || `โหลดไฟล์ไม่สำเร็จ: ${e.target.src || e.target.href || "?"}`), true);
+    addEventListener("unhandledrejection", (e) => showBootError(String(e.reason?.message || e.reason)));
+    setTimeout(() => showBootError("โหลดนานเกินไป (เน็ตช้า หรือเชื่อมต่อเซิร์ฟเวอร์ไม่ได้)"), 15000);
+  </script>
+
   <!-- ลำดับสำคัญ: ไลบรารี -> ค่าคงที่ -> ข้อมูล -> ฟังก์ชันช่วย -> components -> หน้า -> เริ่มทำงาน -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
   <script src="js/config.js"></script>
