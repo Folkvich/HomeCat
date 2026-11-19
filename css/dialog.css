@@ -106,7 +106,7 @@ html.kb-open .dialog-foot { padding-bottom: 10px; }
 
 /* หน้าต่างถามยืนยัน: เล็ก อยู่กลางจอเสมอ (แม้บนมือถือ) */
 dialog.confirm { width: min(340px, calc(100vw - 32px)); margin: auto; border-radius: 18px; }
-dialog.confirm p { margin: 0; padding: 22px 20px 16px; font-size: 1.05rem; color: var(--ink); overflow-wrap: anywhere; }
+dialog.confirm p { margin: 0; padding: 22px 20px 16px; font-size: 1.05rem; color: var(--ink); overflow-wrap: anywhere; white-space: pre-line; }
 dialog.confirm .dialog-foot { padding-bottom: 12px; }
 dialog.confirm .dialog-foot button { flex: 1; min-width: 0; }
 

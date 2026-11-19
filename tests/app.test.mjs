@@ -87,3 +87,9 @@ test("eventToRow: ค่าใช้จ่าย/การรักษาส่�
   const t = JSON.parse(app.run(`JSON.stringify(eventToRow("c1", { id: "e", date: "${today}", type: "treatment", text: "x", cost: 450, timesPerDay: 2, until: "${d(3)}" }))`));
   assert.deepEqual([t.cost, t.times_per_day, t.until], [450, 2, d(3)]);
 });
+
+test("ทำแล้ว: วัคซีน/ถ่ายพยาธิ นัดรอบถัดไปห่างเท่ารอบเดิม, พบหมอไม่ตั้งนัดต่อ", () => {
+  assert.equal(app.run(`nextAfterDone({ type: "vaccine", date: "2025-11-19", next: "2026-11-19" }, "2026-11-20")`), "2027-11-20");
+  assert.equal(app.run(`nextAfterDone({ type: "deworm", date: "2026-08-01", next: "2026-11-01" }, "2026-11-05")`), "2027-02-05"); // 92 วัน
+  assert.equal(app.run(`nextAfterDone({ type: "vet", date: "2026-11-01", next: "2026-11-15" }, "2026-11-15")`), null);
+});

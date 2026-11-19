@@ -18,6 +18,8 @@
 .reminders .r-cats { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; color: var(--muted); font-size: .9rem; }
 .reminders .r-cats span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reminders .chev { flex: none; color: var(--muted); }
+.reminders .r-cats { align-items: center; }
+.reminders .done-btn { flex: none; margin-left: auto; min-height: 32px; padding: 2px 12px; border-radius: 999px; font-size: .85rem; font-weight: 600; white-space: nowrap; }
 
 /* แถวที่กางไว้: ปุ่มชื่อแมวทุกตัว */
 .reminders .r-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

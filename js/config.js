@@ -8,7 +8,7 @@ const SUPABASE_KEY = "sb_publishable_2wUc0y153WBM6NiDE-KQZA_YPImdEPc";
 // กุญแจสาธารณะสำหรับแจ้งเตือน (Web Push / VAPID) คู่กับกุญแจลับที่เก็บในฐานข้อมูล (private.app_secrets)
 const VAPID_PUBLIC_KEY = "BARKYHsp-TE0JXsVRwtn8MJnirIheqdFX6cdWO3nhuXArDbaHRtwgAWI7YKezEpBA77bubSNXH8TzL36G9IAFqY";
 // เวอร์ชันแอป (ตรงกับ CACHE ใน sw.js) ส่งไปกับรายงาน error จะได้รู้ว่าเครื่องนั้นใช้เวอร์ชันไหน
-const APP_VERSION = "v29";
+const APP_VERSION = "v30";
 
 // ชื่อกล่องเก็บข้อมูลในเบราว์เซอร์ (localStorage)
 const KEY = "homecat.v1";                 // ข้อมูลรุ่นเก่า (ก่อนมีระบบบ้าน) ใช้ตอนย้ายขึ้นออนไลน์
