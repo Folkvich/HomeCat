@@ -14,7 +14,9 @@ const TYPES: Record<string, string> = {
   grooming: "🛁 อาบน้ำ/ตัดขน",
   note: "📝 บันทึกทั่วไป",
 };
-const OVERDUE_DAYS = 7; // เลยนัดมาไม่เกินกี่วันถึงยังเตือน (กันเตือนซ้ำทุกวันไปเรื่อย ๆ)
+// นัดหนึ่งครั้งเตือนเฉพาะวัน checkpoint: ก่อน 1 วัน, วันนัด, เลยมา 3 วัน, เลยมา 7 วัน (ครั้งสุดท้าย)
+// วันอื่นไม่เตือนซ้ำ และพอบันทึกครั้งใหม่ของประเภทนั้นแล้ว นัดเก่าก็ไม่ถูกนับอีก
+const OVERDUE_CHECKPOINTS = [3, 7];
 
 type Ev = { type: string; date: string; next: string | null; until: string | null; times_per_day: number | null; text: string };
 type Cat = { id: string; name: string; household_id: string; events: Ev[] };
@@ -47,7 +49,8 @@ function joinByType(items: { type: string; name: string }[]) {
 
 // สรุปของบ้านหนึ่ง คืน null ถ้าวันนี้ไม่มีอะไรต้องเตือน
 function householdMessage(cats: Cat[], today: string) {
-  const dueToday: { type: string; name: string }[] = [], tomorrow: typeof dueToday = [], overdue: typeof dueToday = [];
+  const dueToday: { type: string; name: string }[] = [], tomorrow: typeof dueToday = [];
+  const overdue = new Map<number, typeof dueToday>(OVERDUE_CHECKPOINTS.map((d) => [d, []]));
   const treating: string[] = [];
   for (const c of cats) {
     for (const e of latestByType(c.events)) {
@@ -55,7 +58,7 @@ function householdMessage(cats: Cat[], today: string) {
       const d = daysBetween(today, e.next);
       if (d === 0) dueToday.push({ type: e.type, name: c.name });
       else if (d === 1) tomorrow.push({ type: e.type, name: c.name });
-      else if (d < 0 && d >= -OVERDUE_DAYS) overdue.push({ type: e.type, name: c.name });
+      else overdue.get(-d)?.push({ type: e.type, name: c.name });
     }
     for (const e of c.events) {
       if (e.type === "treatment" && e.until && e.date <= today && e.until >= today) {
@@ -66,7 +69,10 @@ function householdMessage(cats: Cat[], today: string) {
   }
   const lines = [];
   if (dueToday.length) lines.push(`วันนี้: ${joinByType(dueToday)}`);
-  if (overdue.length) lines.push(`เลยนัด: ${joinByType(overdue)}`);
+  for (const [days, items] of overdue) {
+    const last = days === OVERDUE_CHECKPOINTS.at(-1) ? " (เตือนครั้งสุดท้าย)" : "";
+    if (items.length) lines.push(`เลยนัด ${days} วัน${last}: ${joinByType(items)}`);
+  }
   if (tomorrow.length) lines.push(`พรุ่งนี้: ${joinByType(tomorrow)}`);
   if (treating.length) lines.push(`กำลังรักษา: ${[...new Set(treating)].join(", ")}`);
   return lines.length ? lines.join("\n") : null;
